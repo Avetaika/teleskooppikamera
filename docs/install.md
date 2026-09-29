@@ -109,3 +109,15 @@ Kopioi raportin arvot `docs/device-iphone17.md`:n *Mitattu*-sarakkeeseen, tai li
 | Musta kuva ja teksti ”Kameran käyttö on estetty” | Asetukset → Teleskooppi → Kamera päälle. |
 | Sovellus kaatuu | Asetukset → Tietosuoja ja turvallisuus → Analyysi ja parannukset → Analyysidata → `Teleskooppikamera-…ips` → Jaa. Liitä myös `app-log.txt`. |
 | Tarvitaan reaaliaikainen järjestelmäloki | `idevicesyslog` (libimobiledevice Windowsille), suodata alijärjestelmällä `fi.avetaika.teleskooppikamera`. |
+
+## 9. Jos Sideloadly ei toimi: vaihtoehdot
+
+Virhe `Guru Meditation … Login failed: 404` tulee Applen kirjautumispalvelusta. Kokeile ensin: iTunesista ulos ja takaisin sisään, sovelluskohtainen salasana toissijaiselle Apple ID:lle, virustorjunnan tauko, Sideloadlyn päivitys, iTunes ja iCloud Applen sivuilta. Jos mikään ei auta:
+
+| Vaihtoehto | Hinta | Huomio |
+|---|---|---|
+| **AltStore Classic** (AltServer Windowsille) | ilmainen | Sama ilmainen Apple ID ja 7 päivän uusinta. Vaatii iTunes/iCloud Applen sivuilta. AltStore vie yhden kolmesta sovellusslotista. |
+| **SideStore** | ilmainen | Uusii sovelluksen puhelimella ilman PC:tä (kun asennus on kerran tehty). Vaatii kertaluonteisen pariutuksen, ja iOS 27 -tuki kannattaa tarkistaa projektin sivulta. |
+| **Maksullinen Apple Developer -tili + TestFlight** | 99 $/vuosi | CI allekirjoittaa ja lähettää käännöksen TestFlightiin. Asennus puhelimeen ilman PC:tä, käännökset kestävät 90 päivää. Pysyvin ratkaisu, mutta vaatii tilin luonnin selaimessa ja CI-työnkulun lisäyksen. |
+
+Jos valitset maksullisen tilin, kerro, niin lisään TestFlight-työnkulun.
