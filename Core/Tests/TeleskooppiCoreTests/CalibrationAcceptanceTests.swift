@@ -57,7 +57,9 @@ import Testing
         let median = Statistics.median(s.errorsDeg) ?? .infinity
         print("[acceptance] random: n=\(s.errorsDeg.count)/1000, rotation error median \(median) deg, "
             + "p95 \(p95) deg, max \(s.errorsDeg.max() ?? 0) deg, mirror wrong \(s.mirrorWrong.count), "
-            + "median duration \(Statistics.median(s.durations) ?? 0) s, failures \(s.failures.prefix(10))")
+            + "duration median \(Statistics.median(s.durations) ?? 0) s p95 \(Statistics.percentile(s.durations, 95) ?? 0) s, "
+            + "failures \(s.failures.prefix(10))")
+        #expect((Statistics.percentile(s.durations, 95) ?? .infinity) < 45)  // plan phase 5: <= 45 s
         #expect(s.failures.isEmpty, "failures: \(s.failures.prefix(20))")
         #expect(s.errorsDeg.count >= 1000 - s.failures.count)
         #expect(p95 < 1.0)
