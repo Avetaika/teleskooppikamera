@@ -73,6 +73,9 @@ teleskooppi-cli \(TeleskooppiCore.version)
 
 USAGE
   teleskooppi-cli simulate [options]   Simulated two-move calibration (writes PGM frames + summary)
+  teleskooppi-cli info <session>        Summary of a recording (session-*.tcs directory)
+  teleskooppi-cli export-pgm <session> [--from N --to N --step N --out DIR]
+  teleskooppi-cli replay <session> [options]   Detector + tracker + calibration over a recording
   teleskooppi-cli sun [options]        Sun azimuth / altitude (default: now, Helsinki)
   teleskooppi-cli version
 
@@ -92,6 +95,18 @@ SIMULATE OPTIONS
   --out DIR           output directory (default sim-out)
   --no-images         skip PGM output
   --runs N            batch mode: N seeded random scenarios, print statistics only
+  --record DIR        render every frame and write a session-YYYYMMDD-HHMMSS.tcs into DIR
+  --scale S           sensor scale for --record (default 1 = 960x720; 0.4 renders quickly)
+  --fps HZ            analysis frame rate (default 10)
+
+REPLAY OPTIONS
+  --shift             use the whole-frame shift estimator (daytime recordings) instead of star tracking
+  --from N --to N     frame range
+  --cx X --cy Y       optical center (default: meta.profile, else frame center)
+  --radius R          field radius in pixels (default: meta.profile, else 0.53 x frame height)
+  --lock-x X --lock-y Y   star to lock on (default: star.select event, else brightest near the center)
+  --no-markers        ignore calibration.start / calibration.end events
+  --verbose           print one line per frame
 
 SUN OPTIONS
   --date ISO8601      e.g. 2026-09-29T15:30:00Z (default: now)
@@ -135,6 +150,7 @@ func buildScenario(_ args: Arguments) throws -> CalibrationScenario {
     }
     if args.flag("analog") { sc.mount.stickResponse = .analog }
     if let v = try args.double("dropout") { sc.dropoutProbability = v }
+    if let v = try args.double("fps") { sc.frameRate = v }
     return sc
 }
 
@@ -198,6 +214,22 @@ func simulate(_ args: Arguments) throws {
         return
     }
     let sc = try buildScenario(args)
+    if let rec = args.string("record") {
+        var options = SimulatedSessionOptions()
+        options.scale = try args.double("scale") ?? 1
+        let (dir, outcome) = try SimulatedSession.record(
+            scenario: sc, in: URL(fileURLWithPath: rec, isDirectory: true), options: options)
+        print("recorded \(dir.path)")
+        if let r = outcome.result {
+            print("ground-truth run: theta \(fmt(r.displayRotationDegrees)) deg (true "
+                + "\(fmt(AngleMath.degrees(sc.optics.displayRotation))) deg), mirrored \(r.mirrored), "
+                + "duration \(fmt(outcome.duration, 1)) s")
+        } else {
+            let reason = outcome.failure.map { String(describing: $0) } ?? "unknown"
+            print("ground-truth run failed: \(reason)")
+        }
+        return
+    }
     let writeImages = !args.flag("no-images")
     let outDir = URL(fileURLWithPath: args.string("out") ?? "sim-out", isDirectory: true)
     try FileManager.default.createDirectory(at: outDir, withIntermediateDirectories: true)
@@ -320,6 +352,122 @@ func sun(_ args: Arguments) throws {
     if p.isInWarningSector { print("WARNING: the sun is up in the west/north-west sector (plan 8).") }
 }
 
+// MARK: - session tools (phase 3 / 4)
+
+func openSession(_ args: Arguments) throws -> SessionReader {
+    guard let path = args.positional.first else { throw CLIError(description: "missing <session> directory argument") }
+    return try SessionReader(directory: URL(fileURLWithPath: path, isDirectory: true))
+}
+
+func info(_ args: Arguments) throws {
+    let r = try openSession(args)
+    let m = r.meta
+    print("session: \(r.directory.path)")
+    print("created: \(ISO8601DateFormatter().string(from: m.createdAt))  format version \(m.formatVersion)")
+    print("device: \(m.device.model), \(m.device.systemVersion), app \(m.device.appVersion)"
+        + (m.device.camera.map { ", camera \($0)" } ?? ""))
+    print("format: \(m.format.width)x\(m.format.height) \(m.format.pixelFormat), binning \(m.format.binning), "
+        + "nominal \(fmt(m.format.frameRate, 1)) fps")
+    print("frames: \(r.frameCount)" + (m.frameCount.map { " (meta says \($0))" } ?? " (meta has no count)")
+        + (r.isTruncated ? "  WARNING: truncated last frame ignored" : ""))
+    if let a = r.index.first, let b = r.index.last {
+        let dur = b.meta.timestamp - a.meta.timestamp
+        print("time: \(fmt(a.meta.timestamp, 3)) s ... \(fmt(b.meta.timestamp, 3)) s, duration \(fmt(dur, 2)) s"
+            + (r.frameCount > 1 ? ", mean rate \(fmt(Double(r.frameCount - 1) / max(dur, 1e-9), 2)) fps" : ""))
+        print("first frame: exposure \(fmt(a.meta.exposure, 4)) s, ISO \(fmt(Double(a.meta.iso), 0)), "
+            + "lens \(fmt(Double(a.meta.lensPosition), 3))")
+        var gaps = 0
+        var expected = 1 / max(m.format.frameRate, 1e-9)
+        if r.frameCount > 2 { expected = dur / Double(r.frameCount - 1) }
+        for i in 1..<r.frameCount where r.index[i].meta.timestamp - r.index[i - 1].meta.timestamp > 1.5 * expected { gaps += 1 }
+        print("gaps (> 1.5 x mean interval): \(gaps)")
+    }
+    if let p = m.profile {
+        let center = p.opticalCenter.map { "\(fmt($0.x, 1)),\(fmt($0.y, 1))" } ?? "-"
+        let radius = p.fieldRadius.map { fmt($0, 1) } ?? "-"
+        let level = p.speedLevel.map { String($0) } ?? "-"
+        print("profile: eyepiece \(p.eyepiece ?? "-"), speed level \(level), optical center \(center), field radius \(radius)")
+    }
+    if let c = m.calibration {
+        print("calibration: theta \(fmt(c.displayRotationDegrees)) deg, mirrored \(c.mirrored), quality \(c.quality.rawValue)")
+    } else {
+        print("calibration: none")
+    }
+    if !m.notes.isEmpty { print("notes: \(m.notes)") }
+    let events = try r.events()
+    var counts = [String: Int]()
+    for e in events { counts[e.type, default: 0] += 1 }
+    let typeSummary = counts.sorted { $0.key < $1.key }.map { "\($0.key) x\($0.value)" }.joined(separator: ", ")
+    print("events: \(events.count)  \(typeSummary)")
+}
+
+func exportPGM(_ args: Arguments) throws {
+    let r = try openSession(args)
+    guard r.frameCount > 0 else { throw CLIError(description: "session has no frames") }
+    let from = max(try args.int("from") ?? 0, 0)
+    let to = min(try args.int("to") ?? (r.frameCount - 1), r.frameCount - 1)
+    let step = max(try args.int("step") ?? 1, 1)
+    let out = URL(fileURLWithPath: args.string("out") ?? "pgm-out", isDirectory: true)
+    try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
+    var written = 0
+    var i = from
+    while i <= to {
+        let frame = try r.frame(at: i)
+        let index = String(i)
+        let name = "frame-" + String(repeating: "0", count: max(0, 6 - index.count)) + index + ".pgm"
+        try PGM.write(frame.image, to: out.appendingPathComponent(name))
+        written += 1
+        i += step
+    }
+    print("wrote \(written) PGM frames (\(from)...\(to) step \(step)) to \(out.path)")
+}
+
+func replay(_ args: Arguments) throws {
+    let r = try openSession(args)
+    guard r.frameCount > 0 else { throw CLIError(description: "session has no frames") }
+    var options = ReplayOptions()
+    options.useShiftEstimator = args.flag("shift")
+    options.ignoreMarkers = args.flag("no-markers")
+    if let f = try args.int("from"), let t = try args.int("to") { options.frameRange = f...t }
+    else if let f = try args.int("from") { options.frameRange = f...(r.frameCount - 1) }
+    else if let t = try args.int("to") { options.frameRange = 0...t }
+    if let x = try args.double("cx"), let y = try args.double("cy") { options.opticalCenter = Vec2(x, y) }
+    options.fieldRadius = try args.double("radius")
+    if let x = try args.double("lock-x"), let y = try args.double("lock-y") { options.lockPoint = Vec2(x, y) }
+    let verbose = args.flag("verbose")
+    let report = try SessionReplay.run(r, options: options) { rec in
+        guard verbose else { return }
+        let s = rec.sample.map { "(\(fmt($0.p.x, 2)), \(fmt($0.p.y, 2))) q\(fmt($0.quality, 2))" } ?? "-"
+        print("frame \(rec.index) t=\(fmt(rec.time, 3)) detections \(rec.detectionCount) sample \(s) "
+            + "\(fmt(rec.analysisMilliseconds, 2)) ms" + (rec.prompt.map { " prompt \($0.summary)" } ?? ""))
+    }
+    print("replay of \(r.directory.lastPathComponent) (\(options.useShiftEstimator ? "shift estimator" : "star tracker"))")
+    print("optical center \(fmt(report.opticalCenter.x, 1)), \(fmt(report.opticalCenter.y, 1)), "
+        + "field radius \(fmt(report.fieldRadius, 1))")
+    print("frames \(report.framesProcessed), with sample \(report.framesWithSample) "
+        + "(\(fmt(100 * report.sampleRate, 1)) %), detections \(report.totalDetections)")
+    print("analysis time per frame: mean \(fmt(report.averageAnalysisMilliseconds, 2)) ms, "
+        + "max \(fmt(report.maxAnalysisMilliseconds, 2)) ms")
+    if let a = report.calibrationStart { print("calibration window: \(fmt(a, 2)) s ... \(report.calibrationEnd.map { fmt($0, 2) } ?? "end")") }
+    print("prompts:")
+    for e in report.promptLog { print("  t=\(fmt(e.time, 2)) s  \(e.prompt.summary)") }
+    if let c = report.result {
+        print("RESULT: theta \(fmt(c.displayRotationDegrees)) deg, mirrored \(c.mirrored), quality \(c.quality.rawValue)")
+        print("  M: \(c.stickToImage)")
+        print("  orthogonality error \(fmt(AngleMath.degrees(c.orthogonalityError))) deg, "
+            + "line residual \(fmt(c.lineResidual)) px, drift \(c.driftVelocity) px/s")
+        if let ref = r.meta.calibration {
+            let d = abs(AngleMath.difference(c.displayRotation, ref.displayRotation))
+            print("  vs meta.calibration: rotation difference \(fmt(AngleMath.degrees(d), 2)) deg, "
+                + "mirror \(c.mirrored == ref.mirrored ? "same" : "DIFFERENT")")
+        }
+    } else if let f = report.failure {
+        print("FAILED: \(f)")
+    } else {
+        print("no calibration result (session did not finish)")
+    }
+}
+
 // MARK: - main
 
 let argv = CommandLine.arguments
@@ -331,6 +479,12 @@ do {
         try simulate(Arguments(argv.dropFirst(2), flagNames: flags))
     case "sun":
         try sun(Arguments(argv.dropFirst(2), flagNames: []))
+    case "info":
+        try info(Arguments(argv.dropFirst(2), flagNames: []))
+    case "export-pgm":
+        try exportPGM(Arguments(argv.dropFirst(2), flagNames: []))
+    case "replay":
+        try replay(Arguments(argv.dropFirst(2), flagNames: ["shift", "no-markers", "verbose"]))
     case "version", "--version":
         print("teleskooppi-cli \(TeleskooppiCore.version)")
     case "help", "--help", "-h":
