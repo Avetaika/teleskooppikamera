@@ -86,7 +86,8 @@ struct Phase34Tests {
         for k in 0..<90 { if fast.allow(Double(k) / 30) { fastPassed += 1 } }
         #expect(fastPassed == 45)
         // A restarted clock is accepted immediately.
-        #expect(limiter.allow(0))
+        let restarted = limiter.allow(0)
+        #expect(restarted)
     }
 
     @Test func binningAveragesTwoByTwoBlocks() {
