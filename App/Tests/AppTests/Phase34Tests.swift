@@ -79,11 +79,11 @@ struct Phase34Tests {
     @Test func rateLimiterPassesEveryThirdFrameOf30Fps() {
         var limiter = MinIntervalLimiter(minInterval: 0.1)
         var passed = 0
-        for k in 0..<90 where limiter.allow(Double(k) / 30) { passed += 1 }
+        for k in 0..<90 { if limiter.allow(Double(k) / 30) { passed += 1 } }
         #expect(passed == 30)
         var fast = MinIntervalLimiter(minInterval: 1.0 / 15)
         var fastPassed = 0
-        for k in 0..<90 where fast.allow(Double(k) / 30) { fastPassed += 1 }
+        for k in 0..<90 { if fast.allow(Double(k) / 30) { fastPassed += 1 } }
         #expect(fastPassed == 45)
         // A restarted clock is accepted immediately.
         #expect(limiter.allow(0))
