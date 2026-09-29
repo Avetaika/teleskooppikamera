@@ -109,9 +109,9 @@ struct RenderMathTests {
 struct DisplaySettingsTests {
     @Test func longPressMakesTouchedPointTheOpticalCenter() {
         var settings = DisplaySettings()
-        let touch = CGPoint(x: 100, y: 200)
+        let touch = CGPoint(x: 100, y: 300)
         let expected = settings.transform(imageSize: testImageSize, viewSize: testViewSize)
-            .screenToImage(Vec2(100, 200))
+            .screenToImage(Vec2(100, 300))
 
         settings.setOpticalCenter(atScreen: touch, imageSize: testImageSize, viewSize: testViewSize)
 
@@ -125,8 +125,8 @@ struct DisplaySettingsTests {
     @Test func longPressWorksWithRotation() {
         var settings = DisplaySettings(rotationDegrees: 37, flipHorizontal: true)
         let before = settings.transform(imageSize: testImageSize, viewSize: testViewSize)
-        let touch = CGPoint(x: 300, y: 600)
-        let expected = before.screenToImage(Vec2(300, 600))
+        let touch = CGPoint(x: 250, y: 450)
+        let expected = before.screenToImage(Vec2(250, 450))
         settings.setOpticalCenter(atScreen: touch, imageSize: testImageSize, viewSize: testViewSize)
         let center = try! #require(settings.opticalCenter)
         #expect(near(center.x, expected.x, 1e-6) && near(center.y, expected.y, 1e-6))
