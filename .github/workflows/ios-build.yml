@@ -1,0 +1,121 @@
+name: ios-build
+
+# Builds the iOS app on macOS (D-02): XcodeGen → unit tests on the iPhone 17 simulator →
+# unsigned Release build → Teleskooppikamera-unsigned.ipa (artifact "ipa", sign with Sideloadly).
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ios-build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  XCODE_APP: /Applications/Xcode_26.6.app
+  SIMULATOR_NAME: iPhone 17
+  PROJECT: App/Teleskooppikamera.xcodeproj
+  SCHEME: Teleskooppikamera
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Select Xcode
+        run: |
+          if [ -d "$XCODE_APP" ]; then
+            sudo xcode-select -s "$XCODE_APP"
+          else
+            echo "::warning::$XCODE_APP not found, using the image default. Installed:"
+            ls -d /Applications/Xcode*.app
+          fi
+          xcodebuild -version
+          swift --version
+
+      - name: Install XcodeGen
+        run: |
+          brew install xcodegen
+          xcodegen --version
+
+      - name: Generate Xcode project
+        run: xcodegen generate --spec App/project.yml
+
+      - name: Pick simulator
+        id: sim
+        run: |
+          # Newest installed iOS 26.x runtime that has the requested device.
+          UDID=$(xcrun simctl list devices available -j | /usr/bin/python3 -c '
+          import json, os, sys
+          name = os.environ["SIMULATOR_NAME"]
+          found = []
+          for runtime, devices in json.load(sys.stdin)["devices"].items():
+              if ".iOS-26-" not in runtime:
+                  continue
+              version = tuple(int(x) for x in runtime.rsplit("iOS-", 1)[1].split("-"))
+              for d in devices:
+                  if d["name"] == name and d.get("isAvailable", True):
+                      found.append((version, runtime, d["udid"]))
+          if not found:
+              sys.exit(f"No available {name} simulator with an iOS 26 runtime")
+          version, runtime, udid = max(found)
+          print(f"Using {name} on {runtime}", file=sys.stderr)
+          print(udid)
+          ')
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+
+      - name: Unit tests (simulator)
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project "$PROJECT" -scheme "$SCHEME" \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -derivedDataPath build/sim \
+            -resultBundlePath build/AppTests.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            | if command -v xcbeautify >/dev/null; then xcbeautify --renderer github-actions; else cat; fi
+
+      - name: Build unsigned Release for device
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project "$PROJECT" -scheme "$SCHEME" \
+            -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' \
+            -derivedDataPath build/device \
+            CURRENT_PROJECT_VERSION=${{ github.run_number }} \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            | if command -v xcbeautify >/dev/null; then xcbeautify --renderer github-actions; else cat; fi
+
+      - name: Package IPA
+        run: |
+          APP=build/device/Build/Products/Release-iphoneos/Teleskooppikamera.app
+          test -d "$APP"
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' -c 'Print :CFBundleVersion' "$APP/Info.plist"
+          rm -rf Payload Teleskooppikamera-unsigned.ipa
+          mkdir Payload
+          cp -R "$APP" Payload/
+          zip -qry Teleskooppikamera-unsigned.ipa Payload
+          ls -l Teleskooppikamera-unsigned.ipa
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v6
+        with:
+          name: ipa
+          path: Teleskooppikamera-unsigned.ipa
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: test-results
+          path: build/AppTests.xcresult
+          retention-days: 7
+          if-no-files-found: ignore

@@ -1,0 +1,26 @@
+name: core-tests
+
+# Platform-independent core (TeleskooppiCore) on Linux. Must build with Foundation only (D-03).
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: core-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    container: swift:6.2
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - name: Swift version
+        run: swift --version
+      - name: Build and test Core
+        run: swift test --package-path Core
