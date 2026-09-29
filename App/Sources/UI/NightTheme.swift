@@ -11,21 +11,58 @@ enum NightTheme {
 }
 
 struct NightButtonStyle: ButtonStyle {
+    var isSelected = false
+    var font: Font = .title3.weight(.semibold)
+
+    @Environment(\.isEnabled) private var isEnabled
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.title3.weight(.semibold))
+            .font(font)
             .foregroundStyle(NightTheme.red)
+            .opacity(isEnabled ? 1 : 0.4)
             .frame(maxWidth: .infinity, minHeight: NightTheme.buttonHeight)
-            .padding(.horizontal, 8)
+            .padding(.horizontal, 4)
             .background(
                 RoundedRectangle(cornerRadius: 14)
-                    .fill(configuration.isPressed ? NightTheme.dimRed.opacity(0.6) : Color.black.opacity(0.75))
+                    .fill(fill(pressed: configuration.isPressed))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 14)
-                    .stroke(NightTheme.red, lineWidth: 2)
+                    .stroke(NightTheme.red, lineWidth: isSelected ? 4 : 2)
             )
             .contentShape(RoundedRectangle(cornerRadius: 14))
+    }
+
+    private func fill(pressed: Bool) -> Color {
+        if pressed { return NightTheme.dimRed.opacity(0.6) }
+        if isSelected { return NightTheme.dimRed.opacity(0.45) }
+        return Color.black.opacity(0.75)
+    }
+}
+
+/// A red slider with a caption; the row is at least 60 pt tall for gloved fingers.
+struct NightSliderRow: View {
+    let title: Text
+    let value: Binding<Double>
+    let range: ClosedRange<Double>
+    var step: Double?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            title
+                .font(.callout.weight(.semibold))
+                .foregroundStyle(NightTheme.red)
+            Group {
+                if let step {
+                    Slider(value: value, in: range, step: step)
+                } else {
+                    Slider(value: value, in: range)
+                }
+            }
+            .tint(NightTheme.red)
+            .frame(minHeight: 44)
+        }
     }
 }
 
@@ -34,5 +71,11 @@ extension View {
     func nightMonospaced() -> some View {
         font(.system(.caption, design: .monospaced))
             .foregroundStyle(NightTheme.red)
+    }
+
+    /// Semi-transparent black plate behind overlay text.
+    func nightPlate() -> some View {
+        padding(8)
+            .background(Color.black.opacity(0.7), in: RoundedRectangle(cornerRadius: 10))
     }
 }

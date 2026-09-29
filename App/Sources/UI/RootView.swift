@@ -1,68 +1,135 @@
+import AVKit
 import SwiftUI
 import UIKit
 
-/// Phase 0 main screen: live camera, versions, and entry points to the capability report and log.
+/// Main screen (phase 2): Metal live view with crosshair, status HUD, control panels and the
+/// exposure presets. Black and red only; buttons are at least 64 pt tall.
 struct RootView: View {
     let model: AppModel
 
-    @State private var showReport = false
-    @State private var showLog = false
+    private enum Panel {
+        case display
+        case camera
+    }
+
+    @State private var panel: Panel?
+    @State private var showDevMenu = false
+    @AppStorage("showPerformanceOverlay") private var showPerformanceOverlay = false
     @Environment(\.openURL) private var openURL
 
     var body: some View {
         ZStack {
             NightTheme.background.ignoresSafeArea()
 
-            if !AppInfo.isRunningTests {
-                CameraPreviewView(session: model.camera.session, isRunning: model.cameraState == .running)
-                    .ignoresSafeArea()
-            }
+            liveView
+                .ignoresSafeArea()
 
-            VStack(spacing: 12) {
-                header
-                Spacer()
-                status
-                HStack(spacing: 12) {
+            VStack(spacing: 10) {
+                HStack(alignment: .top, spacing: 8) {
+                    StatusHUD(model: model)
                     Button {
-                        showReport = true
+                        showDevMenu = true
                     } label: {
-                        Label("Raportti", systemImage: "list.bullet.rectangle")
+                        Image(systemName: "ellipsis")
+                            .font(.title2.weight(.bold))
                     }
-                    Button {
-                        showLog = true
-                    } label: {
-                        Label("Loki", systemImage: "doc.text")
-                    }
+                    .buttonStyle(NightButtonStyle(font: .title2))
+                    .frame(width: NightTheme.buttonHeight)
+                    .accessibilityLabel(Text("Kehitysvalikko"))
                 }
-                .buttonStyle(NightButtonStyle())
+                if showPerformanceOverlay {
+                    PerformanceOverlay(model: model)
+                }
+                Spacer(minLength: 0)
+                status
+                panelView
+                bottomBar
             }
-            .padding()
+            .padding(.horizontal, 12)
+            .padding(.bottom, 8)
         }
-        .task { await model.startCamera() }
+        .task { await model.startCurrentSource() }
         .onAppear { UIApplication.shared.isIdleTimerDisabled = true }
         .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
-        .fullScreenCover(isPresented: $showReport) {
-            CapabilityScreen(model: model)
+        .fullScreenCover(isPresented: $showDevMenu) {
+            DevMenuScreen(model: model, showPerformanceOverlay: $showPerformanceOverlay)
         }
-        .fullScreenCover(isPresented: $showLog) {
-            LogScreen()
+        // Volume buttons, Camera Control and AirPods clicks (D-18). Placeholder: logs the event.
+        .onCameraCaptureEvent { event in
+            let phase = event.phase
+            let raw = phase.rawValue
+            let isEnd = phase == .ended
+            Task { @MainActor in
+                model.handleCaptureEvent(phaseRawValue: raw, isEnd: isEnd)
+            }
         }
     }
 
-    private var header: some View {
-        VStack(spacing: 2) {
-            Text("Teleskooppikamera · vaihe 0")
-                .font(.headline)
-                .foregroundStyle(NightTheme.red)
-            Text(verbatim: AppInfo.summary)
-                .nightMonospaced()
+    // MARK: - Live view
+
+    private var liveView: some View {
+        GeometryReader { geometry in
+            let size = geometry.size
+            ZStack {
+                if !AppInfo.isRunningTests {
+                    MetalView(renderer: model.renderer, params: model.renderParams(viewSize: size))
+                }
+                CrosshairOverlay(transform: model.transform(viewSize: size))
+                LongPressLocationView { point in
+                    model.setOpticalCenter(atScreen: point, viewSize: size)
+                }
+            }
+            .frame(width: size.width, height: size.height)
         }
-        .padding(8)
-        .background(Color.black.opacity(0.6), in: RoundedRectangle(cornerRadius: 10))
+    }
+
+    // MARK: - Bottom controls
+
+    private var bottomBar: some View {
+        HStack(spacing: 6) {
+            ForEach(CameraPreset.allCases) { preset in
+                Button(preset.title) { model.controls.applyPreset(preset) }
+                    .buttonStyle(NightButtonStyle(
+                        isSelected: model.controls.settings.activePreset == preset, font: .subheadline.weight(.bold)
+                    ))
+            }
+            Button("Kuva") { toggle(.display) }
+                .buttonStyle(NightButtonStyle(isSelected: panel == .display, font: .subheadline.weight(.bold)))
+            Button("Kamera") { toggle(.camera) }
+                .buttonStyle(NightButtonStyle(isSelected: panel == .camera, font: .subheadline.weight(.bold)))
+        }
+    }
+
+    private func toggle(_ target: Panel) {
+        panel = panel == target ? nil : target
+    }
+
+    @ViewBuilder
+    private var panelView: some View {
+        switch panel {
+        case .display:
+            DisplayPanel(model: model)
+                .frame(maxHeight: 380)
+        case .camera:
+            CameraPanel(model: model)
+                .frame(maxHeight: 380)
+        case nil:
+            EmptyView()
+        }
     }
 
     @ViewBuilder
     private var status: some View {
+        switch model.sourceKind {
+        case .synthetic:
+            EmptyView()
+        case .camera:
+            cameraStatus
+        }
+    }
+
+    @ViewBuilder
+    private var cameraStatus: some View {
         switch model.cameraState {
         case .running:
             EmptyView()

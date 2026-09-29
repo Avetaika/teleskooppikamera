@@ -80,6 +80,8 @@ targets:
       - path: Tests/AppTests
     dependencies:
       - target: Teleskooppikamera
+      - package: TeleskooppiCore
+        product: TeleskooppiCore
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
