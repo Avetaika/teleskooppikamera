@@ -69,7 +69,28 @@ Kunkin vaiheen tarkka testi ja hyväksymiskriteeri löytyvät [plan.md](../plan.
 |---|---|
 | 0 Työkaluketju + kamerasovellus | ✅ pilvessä · ⏳ **odottaa asennustasi puhelimeen** |
 | 1 Kalibroinnin matematiikka + simulaatio | ✅ valmis (59 testiä) |
-| 2 Metal-livekuva, yötila, kamerasäädöt | 🔨 työn alla |
+| 2 Metal-livekuva, yötila, kamerasäädöt | ✅ pilvessä (CI vihreä) · ⏳ **odottaa puhelintestiäsi** (lista alla) |
 | 3–4 Nauhoitus, tähden tunnistus (ydin) | 🔨 työn alla |
 | 5 Kalibrointi ja liikeohje sovelluksessa | seuraavaksi |
 | 6 Profiilit, viimeistely → MVP | sen jälkeen |
+
+## 8. Vaihe 2 -testi puhelimella
+
+Asenna uusin build (kohta 2). Puhelin voi ilmoittaa iOS 27.0, vaikka sovelluksen kohde on 26.0: se on ylöspäin yhteensopiva ja sen pitäisi toimia. Tee testi ensin päivällä huoneessa tai ikkunasta kaukaiseen kohteeseen, sitten pimeässä. Kirjaa havainnot (luvut ja ”tuntuu kömpelöltä”) ja lähetä ne.
+
+- [ ] **Kamerakysely:** ensimmäisellä käynnistyksellä sovellus pyytää kameran lupaa. Salli. (Jos kielsit: sovelluksen pitää näyttää ohje ja nappi ”Avaa Asetukset”, ei kaatua.)
+- [ ] **Livekuva ja viive:** kuva on sulava. Kehitysvalikko (⋯) → Suorituskyky → ”Näytä pääruudulla”: kamera ~30 fps, piirto ~30 fps, viive alle 100 ms (kirjaa luku). Heilauta kättä kameran edessä: tuntuuko viive?
+- [ ] **Kierto-liukusäädin:** ”Kuva” → Kierto. Kuva pyörii sulavasti ilman sätkimistä; −1° / +1° / 0° / +90° toimivat; ”Peilaa vaaka/pysty” peilaa. Ruudun vasemmassa ylälaidassa lukee ”KÄSI x°”.
+- [ ] **Ristikko ja keskipiste:** paina kuvaa sormella noin sekunnin: ristikko siirtyy kohtaan ja kuva keskittyy siihen. ”Keskitä kuva” palauttaa. Sulje ja avaa sovellus: asetus säilyy.
+- [ ] **Punatila:** ”Kuva” → Punatila. Kaikki punaista ja mustaa, ei valkoista pilkkua (esim. lataus- tai tilarivi). Mustapiste, valkopiste ja gamma muuttavat kuvaa; ”Nollaa venytys” palauttaa.
+- [ ] **Kirkkaus:** liu’uta näytön kirkkaus minimiin (pimeässä pitää olla miellyttävän himmeä). Paina kotinäppäintä / pyyhkäise sovellus taustalle: **järjestelmän kirkkauden pitää palautua**. Palaa sovellukseen: himmennys palaa. Ruutu ei sammu 3 minuutin jälkeen.
+- [ ] **Vaakalukitus:** käännä puhelinta: käyttöliittymän ei pidä kääntyä.
+- [ ] **Valotus 1 s:** ”Kamera” → Valotus → Käsi, valotusaika 1 s (tai esiasetus *Katselu*). Kuva päivittyy noin kerran sekunnissa, ei jäädy eikä sovellus kaadu; Nyt-rivillä lukee noin 1 s. Palaa lyhyeen valotukseen: fps palaa 30:een. Ne, jotka ovat epävarmoja rajoista: rajat näkyvät ”Rajat”-rivillä (kirjaa ne).
+- [ ] **Valotuksen lukitus:** valitse Lukitse, sytytä ja sammuta lamppu: kirkkaus ei saa hakea.
+- [ ] **Tarkennus ääretön:** ”Kamera” → Tarkennus. Osoita kaukaiseen kohteeseen (ikkunasta masto/horisontti) ja paina ”Kalibroi ääretön”; sen jälkeen ”Ääretön” palauttaa saman tarkkuuden. Kirjaa tallennettu linssin arvo (esim. 0.8xx).
+- [ ] **Aurinkovaroitus:** päivällä statusrivillä pitäisi näkyä Auringon suunta ja korkeus; jos aurinko on horisontin yläpuolella lännessä tai pohjoisessa (az 200–360°), näkyy punainen varoitus ”AURINKO YLHÄÄLLÄ …”. Onko suunta oikein (vertaa kompassiin)?
+- [ ] **Synteettinen tila:** Kehitysvalikko → Kuvalähde → Synteettinen. Tähtitaivas ilmestyy ja teksti ”SYNTEETTINEN” näkyy. Virtuaalitatti liikuttaa taivasta. Vaihda takaisin Kameraan: livekuva palaa.
+- [ ] **Lämpö ja akku:** jätä livekuva päälle 30 min (mieluiten laturissa ja ilman): kehitysvalikon lämpötila pysyy ”nominal”/”fair”, ei kaatumisia. Kirjaa akun kulutus.
+- [ ] **Napit:** onnistuuko niiden painaminen hanskat kädessä (napit ovat vähintään 64 pt)?
+
+Mitatut arvot kirjataan tiedostoon `docs/device-iphone17.md`.

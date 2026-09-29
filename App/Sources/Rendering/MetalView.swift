@@ -48,6 +48,8 @@ struct MetalView: UIViewRepresentable {
         func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {}
 
         func draw(in view: MTKView) {
+            // The GPU rejects work submitted from the background.
+            guard UIApplication.shared.applicationState != .background else { return }
             guard let renderer,
                   let drawable = view.currentDrawable,
                   let descriptor = view.currentRenderPassDescriptor else { return }

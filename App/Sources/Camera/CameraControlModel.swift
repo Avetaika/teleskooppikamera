@@ -145,7 +145,7 @@ final class CameraControlModel {
         settings.save(to: defaults)
         let control = settings.exposure
         let camera = self.camera
-        Task { await camera.applyExposure(control) }
+        camera.submitExposure(control)
     }
 
     // MARK: - Focus
@@ -193,6 +193,6 @@ final class CameraControlModel {
         settings.save(to: defaults)
         let control = settings.focus
         let camera = self.camera
-        Task { await camera.applyFocus(control) }
+        camera.submitFocus(control)
     }
 }

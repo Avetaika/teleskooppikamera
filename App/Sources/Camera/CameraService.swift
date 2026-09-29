@@ -165,6 +165,24 @@ final class CameraService: @unchecked Sendable {
         }
     }
 
+    /// Fire-and-forget variants for UI callers. `queue.async` is enqueued synchronously, so rapid
+    /// slider changes reach the device in order (separate `Task`s would not guarantee that).
+    func submitExposure(_ control: ExposureControl) {
+        queue.async {
+            self.currentExposure = control
+            guard let device = self.device else { return }
+            self.applyExposureOnQueue(control, device: device)
+        }
+    }
+
+    func submitFocus(_ control: FocusControl) {
+        queue.async {
+            self.currentFocus = control
+            guard let device = self.device else { return }
+            self.applyFocusOnQueue(control, device: device)
+        }
+    }
+
     func applyFocus(_ control: FocusControl) async {
         await onQueue {
             self.currentFocus = control

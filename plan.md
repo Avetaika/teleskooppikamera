@@ -503,6 +503,7 @@ flowchart LR
 **Päivätesti:** kaukainen masto. Kierrä kuva käsin niin, että tatti ylös liikuttaa kuvaa oikein; mittaa viive toisella puhelimella.
 **Yötesti:** Kuu tai kirkas tähti 25 mm:llä; valotus 1/4 s ja 1 s; tarkennus ääretön + putken fokusseri. Istunto 30 min.
 **Hyväksyntä:** viive < 100 ms (30 fps, lyhyt valotus), 1 s valotus toimii, 30 min ilman lämpövaroitusta tai kaatumista, akunkulutus kirjattu, UI käytettävissä hanskoilla (napit ≥ 60 pt).
+**Tila 2026-09-29:** ✅ CI-varmistettu (ios-build + core-tests vihreänä, oma haara `phase2`): Metal-livekuva (YUV → näyttö, 3×3-muunnos, venytys, punatila), `RenderMath`/`DisplaySettings`-testit, kamerasäätölogiikka, synteettinen lähde + virtuaalitatti, aurinkomuistutus, suorituskyvyn mittari. Katselmoinnissa korjattu: säätöjen järjestys (kamerakomennot samaan jonoon peräkkäin, liukusäädin ei sekoitu), Metal-piirto ei yritä taustalla. ⏳ **Vaatii puhelintestin** (ei ole CI:llä todennettavissa): livekuvan viive < 100 ms, kierto-liukusäädin, 1 s valotus, ääretön-tarkennus, kirkkauden palautus, 30 min lämpö/akku, hanskatestaus. Ohjeet: docs/ohje.md kohta ”Vaihe 2 -testi puhelimella”. Puhelin ilmoittaa iOS 27.0, kohde on 26.0: ylöspäin yhteensopiva, pitäisi toimia.
 
 ### Vaihe 3: Tallennus ja toisto
 **Rakennetaan:** `SessionWriter`/`SessionReader` (ytimeen, D-11), `SessionRecorder` sovellukseen (nappi + automaattisesti kalibroinnin aikana), `ReplayFrameSource` (sovellus toistaa nauhoitteen livekuvana), `teleskooppi-cli replay | export-pgm | info`. Tiedostonjako päälle.
