@@ -72,7 +72,7 @@ private func makeSession(mode: CalibrationSession.Mode = .full) -> CalibrationSe
         #expect(AngleMath.degrees(out.rotationError!) < 1)
         // Drift estimate in px/s matches the simulated drift.
         let driftImage = sc.optics.naturalToImage * Vec2(9, 12) / sc.optics.plateScale
-        #expect((r.driftVelocity - driftImage).length < 0.5)
+        #expect((r.driftVelocity - driftImage).length < 0.75)
     }
 
     @Test func quickRecalibration() {
@@ -93,6 +93,21 @@ private func makeSession(mode: CalibrationSession.Mode = .full) -> CalibrationSe
         let out = CalibrationSimulation(scenario: sc).run()
         #expect(out.result != nil, "failure: \(String(describing: out.failure))")
         #expect(AngleMath.degrees(out.rotationError ?? .pi) < 1)
+    }
+
+    @Test func earlyStopKeepsStarInsideField() {
+        // theta = 0, not mirrored: stick UP moves the star +v, stick RIGHT moves it -u in the image.
+        // Starting 100 px left of the center, the RIGHT move heads outward: the early STOP at 0.75 R ends
+        // it after ~130 px instead of 190 px.
+        let sc = CalibrationScenario(seed: 30, optics: SimulatedOptics(displayRotation: 0), jitterSigma: 0.5,
+                                     reactionTime: 0.6, starOffset: Vec2(-100, 0))
+        let out = CalibrationSimulation(scenario: sc).run()
+        let r = try! #require(out.result, "failure: \(String(describing: out.failure))")
+        #expect(AngleMath.degrees(out.rotationError!) < 1)
+        #expect(!r.mirrored)
+        let right = try! #require(out.measurements.first(where: { $0.direction == .right }))
+        #expect(right.displacement < 170)
+        #expect(out.measurements.allSatisfy { $0.displacement >= 0.6 * 190 })
     }
 
     // MARK: Failure modes

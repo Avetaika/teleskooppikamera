@@ -108,6 +108,8 @@ public struct CalibrationRunOutcome: Sendable {
     public var expectedStickToImage: Mat2
     /// Prompt changes with their times.
     public var promptLog: [(time: Double, prompt: CalibrationPrompt)]
+    /// Per-move measurements of the session (empty on failure).
+    public var measurements: [MoveMeasurement]
     public var succeeded: Bool { result != nil }
 }
 
@@ -191,6 +193,7 @@ public struct CalibrationSimulation: Sendable {
         return CalibrationRunOutcome(scenario: scenario, result: session.result,
                                      failure: session.failure ?? (session.result == nil ? .timeout : nil),
                                      rotationError: rotationError, mirrorCorrect: mirrorCorrect, duration: t,
-                                     expectedStickToImage: scenario.expectedStickToImage, promptLog: log)
+                                     expectedStickToImage: scenario.expectedStickToImage, promptLog: log,
+                                     measurements: session.measurements)
     }
 }

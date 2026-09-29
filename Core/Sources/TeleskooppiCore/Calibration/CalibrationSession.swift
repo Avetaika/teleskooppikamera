@@ -12,6 +12,12 @@ public struct CalibrationConfig: Sendable, Codable, Equatable {
     public var maxStartOffsetFraction: Double = 0.4
     /// Fail with `.nearEdge` when the star gets closer than this fraction of R to the field stop.
     public var edgeMarginFraction: Double = 0.05
+    /// Early STOP (deviation from plan 4.3, see D-24): once the star is this far from the center
+    /// (fraction of R) and has moved at least `minimumDisplacementFraction` of the target, STOP now
+    /// instead of waiting for the full target, so reaction time, braking and drift cannot carry it
+    /// out of the field stop.
+    public var earlyStopRadiusFraction: Double = 0.75
+    public var minimumDisplacementFraction: Double = 0.6
     /// Minimum stillness window before a move (plan 4.3: >= 1 s).
     public var minSettleDuration: Double = 1.0
     /// Longest stillness window used (older samples are dropped); also ends a settle when the
@@ -196,7 +202,10 @@ public struct CalibrationSession: Sendable {
             moveBuffer.append(s)
             let d = recordProgress(s)
             progress = d / config.targetDisplacement
-            if d >= config.targetDisplacement {
+            let radius = (s.p - config.opticalCenter).length
+            let nearStop = radius >= config.earlyStopRadiusFraction * config.fieldRadius
+                && d >= config.minimumDisplacementFraction * config.targetDisplacement
+            if d >= config.targetDisplacement || nearStop {
                 enter(.stopping, at: t)
                 prompt = .stop
             } else if t - phaseStart >= config.stallDuration,
