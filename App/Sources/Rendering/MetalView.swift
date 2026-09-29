@@ -32,7 +32,7 @@ struct MetalView: UIViewRepresentable {
     }
 
     @MainActor
-    final class Coordinator: NSObject, @preconcurrency MTKViewDelegate {
+    final class Coordinator: NSObject, MTKViewDelegate {
         private let renderer: FrameRenderer?
 
         init(renderer: FrameRenderer?) {

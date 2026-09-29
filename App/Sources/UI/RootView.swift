@@ -57,7 +57,7 @@ struct RootView: View {
         // Volume buttons, Camera Control and AirPods clicks (D-18). Placeholder: logs the event.
         .onCameraCaptureEvent { event in
             let phase = event.phase
-            let raw = phase.rawValue
+            let raw = Int(phase.rawValue)
             let isEnd = phase == .ended
             Task { @MainActor in
                 model.handleCaptureEvent(phaseRawValue: raw, isEnd: isEnd)
