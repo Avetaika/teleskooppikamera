@@ -103,3 +103,12 @@ v0: 8-bit YUV + globaali sävykartoitus, kohdistus translaatio + kierto. v1: laa
 
 ### D-23 · Kalibrointinopeus: SynScan-taso 3–4 (25 mm), 2–3 (10 mm) · 2026-09-29 · VOIMASSA (🔬 vahvistetaan vaiheessa 5)
 Tavoite on, että 25 %:n kenttäsiirtymä kestää 3–7 s: riittävästi näytteitä suoran sovitukseen, ja ajelehtimisen osuus jää alle 6 %. Oletustaso 5 (64×) on liian nopea.
+
+### D-24 · Kalibroinnin tilakoneen tarkennukset (vaihe 1) · 2026-09-29 · VOIMASSA (🔬 tatin käyttäytyminen vahvistetaan vaiheessa 5)
+Vaiheen 1 simulaatioajojen (1000 satunnaistapausta + 576 kulmaruudukon tapausta) perusteella luvun 4.3 tilakoneeseen tehtiin kolme tarkennusta:
+1. **Varhainen STOP:** kun tähti on yli 0,75 R:n päässä keskipisteestä ja liikettä on vähintään 60 % tavoitteesta (15 % halkaisijasta), STOP annetaan heti eikä vasta 25 %:ssa. Ilman tätä noin 1 % tapauksista päätyi `nearEdge`-virheeseen, koska reaktioaika, jarrutus ja ajelehtiminen vievät tähden toisen liikkeen jälkeen 0,9–0,95 R:ään. Suunnan tarkkuus ei kärsi (sentroidivirhe on pieni 110 px:n liikkeelläkin).
+2. **Ajelehtiminen yhdistetään kaikista paikallaanolojaksoista** (alku, liikkeiden välissä, lopussa; yhteinen kulmakerroin), ja paikallaanoloa jatketaan ≥ 1 s:sta enintään 8 s:iin, kunnes yhdistetyn arvion keskivirhe on ≤ 0,25 px/s. Liikkeiden suunnat lasketaan vasta lopussa lopullisella arviolla. **Miksi:** 3 px:n värinällä yhden sekunnin arvio on ±3 px/s, mikä antaisi hitaalla AZ-liikkeellä (16×, korkeus 60° → 14 px/s) useiden asteiden virheen.
+3. **Simuloitu tatti on oletuksena on/off akselia kohden:** alle noin 20°:n vino painallus ei vuoda toiselle akselille. **Havainto:** jos tatti onkin analoginen ja käyttäjä painaa molemmat liikkeet johdonmukaisesti samaan kiertosuuntaan vinossa, kiertokulma vääristyy saman verran eikä kohtisuoruus paljasta sitä (CLI-ajo: 12° vinous → 12° kulmavirhe, kohtisuoruus vain 3,8°). Vaiheessa 5 tarkistetaan, onko SynScanin tatti analoginen (luku 4.6, 🔬).
+
+Lisäksi: `CalibrationSession` on arvotyyppi (`struct`, `Sendable`) eikä luvun 3.3 luonnoksen `final class`. `feed(_:at:)` ottaa ajan erikseen, jotta kadonneen tähden (`nil`) aikakatkaisu voidaan laskea.
+**Avoin vaiheelle 5:** kun akselinopeudet eroavat (`|m_R| ≠ |m_U|`, cos ALT), nuoli osoittaa tatin painallussuunnan, joka ruudulla poikkeaa ristikko→tähti-suunnasta (tähti kulkee silti suoraan ristikkoon). Kenttätesti ratkaisee, näytetäänkö nuoli tattiavaruudessa vai ruudun suunnassa.
