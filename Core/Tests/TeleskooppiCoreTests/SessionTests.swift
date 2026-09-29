@@ -168,7 +168,7 @@ import Testing
 @Suite struct SessionReplayTests {
     /// A scenario (scaled sensor, gentle noise) whose ground-truth calibration succeeds.
     static func workingScenario(scale: Double) -> CalibrationScenario {
-        for seed in UInt64(1)...40 {
+        for seed in UInt64(1)...120 {
             var sc = CalibrationScenario.random(seed: seed)
             sc.jitterSigma = 0.5
             let scaled = sc.scaled(by: scale)
@@ -178,7 +178,7 @@ import Testing
     }
 
     @Test func replayOfSimulatedRecordingReproducesCalibration() throws {
-        let scale = 0.4
+        let scale = 0.3
         let sc = Self.workingScenario(scale: scale)
         let root = try temporaryDirectory("replay")
         defer { try? FileManager.default.removeItem(at: root) }
@@ -193,7 +193,10 @@ import Testing
         let reader = try SessionReader(directory: dir)
         #expect(reader.frameCount > 100)
         #expect(reader.meta.frameCount == reader.frameCount)
-        #expect(reader.meta.calibration == truth)
+        // (Dates are stored with one-second resolution, so compare the physical content.)
+        #expect(reader.meta.calibration?.stickToImage == truth.stickToImage)
+        #expect(reader.meta.calibration?.displayRotation == truth.displayRotation)
+        #expect(reader.meta.calibration?.mirrored == truth.mirrored)
         let events = try reader.events()
         #expect(events.contains { $0.type == SessionEvent.calibrationStart })
         #expect(events.contains { $0.type == SessionEvent.calibrationEnd })

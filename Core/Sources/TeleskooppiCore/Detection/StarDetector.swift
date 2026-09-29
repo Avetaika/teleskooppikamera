@@ -58,7 +58,7 @@ public struct StarDetectorConfig: Sendable, Codable, Equatable {
     /// Pixel value at or above which a pixel counts as saturated.
     public var saturationLevel: UInt8 = 250
     /// Maximum centroid refinement iterations.
-    public var centroidIterations = 4
+    public var centroidIterations = 6
     /// Aperture radius limits (pixels); the aperture is `2 * HFR` inside these.
     public var minApertureRadius = 3.0
     public var maxApertureRadius = 15.0
@@ -317,13 +317,17 @@ public struct StarDetector: Sendable {
             guard bounds.x0 <= bounds.x1, bounds.y0 <= bounds.y1 else { return nil }
             var s = 0.0, sx = 0.0, sy = 0.0
             let r2 = radiusNow * radiusNow
+            // Gaussian-windowed centroid (near-optimal for noisy stars); sigma follows the measured HFR.
+            let sigmaW = iteration == 0 ? radiusNow / 2.4 : max(0.85 * hfr, 1.0)
+            let invTwoSigma2 = 1 / (2 * sigmaW * sigmaW)
             for y in bounds.y0...bounds.y1 {
                 let row = y * image.stride
                 for x in bounds.x0...bounds.x1 {
                     let dx = Double(x) - c.x, dy = Double(y) - c.y
-                    if dx * dx + dy * dy > r2 { continue }
+                    let d2 = dx * dx + dy * dy
+                    if d2 > r2 { continue }
                     if let m = mask, !m.contains(x: x, y: y) { continue }
-                    let e = Double(image.pixels[row + x]) - bg.sample(x: x, y: y).level
+                    let e = (Double(image.pixels[row + x]) - bg.sample(x: x, y: y).level) * exp(-d2 * invTwoSigma2)
                     s += e
                     sx += e * Double(x)
                     sy += e * Double(y)
