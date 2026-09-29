@@ -33,6 +33,8 @@ final class AppModel {
             cameraState = .unavailable("unit tests")
             return
         }
+        // `.task` and the scene phase change can both call this at launch.
+        guard cameraState != .requestingPermission else { return }
         switch CameraService.authorization {
         case .authorized:
             break

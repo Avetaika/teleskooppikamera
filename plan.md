@@ -488,6 +488,7 @@ flowchart LR
 **Päivätesti:** puhelin NexYZ:ään 25 mm okulaarille. Livekuva näyttää okulaarin ympyrän; kirjaa, mahtuuko ympyrä 4:3-kuvaan.
 **Yötesti:** ei vaadita.
 **Hyväksyntä:** (1) Pushista puhelimeen alle 20 minuutissa ohjeen mukaan. (2) `docs/device-iphone17.md`:n ”Mitattu”-sarake täytetty. (3) Sovellus ei kaadu 10 minuutin käytössä.
+**Tila 2026-09-29:** ✅ CI vihreä: `core-tests` (ubuntu, `swift:6.2`) ja `ios-build` (macos-26, Xcode 26.6, 9 AppTests-testiä iPhone 17 -simulaattorilla iOS 26.5, allekirjoittamaton Release-käännös → artefakti `ipa`, ajo noin 4 min). ⏳ Käyttäjä puhelimella: asennus `docs/install.md`:n mukaan, livekuva, kyvykkyysraportti PC:lle ja arvot `docs/device-iphone17.md`:hen, 10 min kaatumatta, päivätesti okulaarilla.
 
 ### Vaihe 1: Ydin: geometria, synteettinen taivas, kalibroinnin ja ohjauksen matematiikka *(rinnakkain vaiheen 0 kanssa, vain Windows)*
 **Rakennetaan:** `TeleskooppiCore`: `Geometry` (Vec2, Mat2, TLS-suora, kulmien keskiarvo), `GrayImage`, `SyntheticSky` (PSF, kohina, taustagradientti, vinjetointi/kenttäympyrä, kierto, kirkkausjakauma), `SimulatedMount` (kaksi akselia, nopeustasot, välys, kiihdytys, ajelehtiminen, vinopainallus), `CalibrationSolver`, `GuidanceEngine` (+ kvantisointi, hystereesi), `DisplayTransform`, `SolarPosition`. `teleskooppi-cli simulate` (kirjoittaa PGM-kuvia ja tulokset).
