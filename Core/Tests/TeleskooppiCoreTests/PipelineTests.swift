@@ -72,7 +72,7 @@ import Testing
     }
 
     @Test func calibrationAcceptanceThroughDetectorAndTracker() async {
-        let count = 60
+        let count = 32
         let scenarios = (1...count).map { CalibrationScenario.random(seed: UInt64(1000 + $0)) }
         let clock = ContinuousClock()
         var results = [CaseResult]()

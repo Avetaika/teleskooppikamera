@@ -58,8 +58,8 @@ public struct ShiftEstimatorConfig: Sendable, Codable, Equatable {
     public var minCorrelation = 0.4
     /// Starts a new keyframe when the shift against the current one exceeds this fraction of the smaller side.
     public var rekeyFraction = 0.25
-    /// Fractional refinement step sizes in fine-level pixels.
-    public var refinementSteps: [Double] = [0.5, 0.25]
+    /// Lucas-Kanade iterations on the finest level.
+    public var refinementIterations = 5
 
     public init() {}
 }
@@ -305,24 +305,69 @@ public struct ShiftEstimator: Sendable {
             correlation = r.correlation
             previousFactor = f
         }
-        // Fractional refinement on the finest level.
+        // Sub-pixel refinement on the finest level: Gauss-Newton on the sum of squared differences
+        // (Lucas-Kanade) starting from the correlation optimum.
         let fine = reference.levels.count - 1
         let ref = reference.levels[fine].plane, cur = image.levels[fine].plane
-        for h in config.refinementSteps {
-            guard let f0 = ncc(ref: ref, cur: cur, shift: shift, minOverlap: config.minOverlapFraction) else { break }
-            var next = shift
-            if let l = ncc(ref: ref, cur: cur, shift: shift - Vec2(h, 0), minOverlap: config.minOverlapFraction),
-               let r = ncc(ref: ref, cur: cur, shift: shift + Vec2(h, 0), minOverlap: config.minOverlapFraction) {
-                next.x += h * parabolaOffset(l, f0, r)
-            }
-            if let u = ncc(ref: ref, cur: cur, shift: shift - Vec2(0, h), minOverlap: config.minOverlapFraction),
-               let d = ncc(ref: ref, cur: cur, shift: shift + Vec2(0, h), minOverlap: config.minOverlapFraction) {
-                next.y += h * parabolaOffset(u, f0, d)
-            }
-            shift = next
-            correlation = ncc(ref: ref, cur: cur, shift: shift, minOverlap: config.minOverlapFraction) ?? f0
-        }
+        shift = refine(ref: ref, cur: cur, start: shift, iterations: config.refinementIterations,
+                       minOverlap: config.minOverlapFraction)
+        if let c = ncc(ref: ref, cur: cur, shift: shift, minOverlap: config.minOverlapFraction) { correlation = c }
         let finalFactor = Double(reference.levels[fine].factor)
         return ShiftEstimate(shift: shift * finalFactor, correlation: correlation)
+    }
+
+    /// Lucas-Kanade translation refinement of `cur(x) = ref(x - s)`; the brightness offset is a free
+    /// parameter, so it is invariant to constant illumination changes.
+    static func refine(ref: FloatPlane, cur: FloatPlane, start: Vec2, iterations: Int, minOverlap: Double) -> Vec2 {
+        var s = start
+        let w = cur.width, h = cur.height
+        func sample(_ x: Double, _ y: Double) -> Double {
+            let x0 = Int(x.rounded(.down)), y0 = Int(y.rounded(.down))
+            let fx = x - Double(x0), fy = y - Double(y0)
+            let x1 = min(x0 + 1, ref.width - 1), y1 = min(y0 + 1, ref.height - 1)
+            let p00 = Double(ref.data[y0 * ref.width + x0]), p01 = Double(ref.data[y0 * ref.width + x1])
+            let p10 = Double(ref.data[y1 * ref.width + x0]), p11 = Double(ref.data[y1 * ref.width + x1])
+            return (p00 * (1 - fx) + p01 * fx) * (1 - fy) + (p10 * (1 - fx) + p11 * fx) * fy
+        }
+        for _ in 0..<max(iterations, 0) {
+            // Pixels whose reference position and its +-1 neighbours are inside the reference.
+            let xa = max(0, Int((s.x + 1).rounded(.up))), xb = min(w - 1, Int((s.x + Double(ref.width - 2)).rounded(.down)))
+            let ya = max(0, Int((s.y + 1).rounded(.up))), yb = min(h - 1, Int((s.y + Double(ref.height - 2)).rounded(.down)))
+            guard xa <= xb, ya <= yb else { break }
+            let n = Double((xb - xa + 1) * (yb - ya + 1))
+            guard n >= minOverlap * Double(w * h) else { break }
+            var sg = (x: 0.0, y: 0.0), sd = 0.0
+            var sxx = 0.0, sxy = 0.0, syy = 0.0, sgxd = 0.0, sgyd = 0.0
+            for y in ya...yb {
+                let ry = Double(y) - s.y
+                for x in xa...xb {
+                    let rx = Double(x) - s.x
+                    let b = sample(rx, ry)
+                    let gx = 0.5 * (sample(rx + 1, ry) - sample(rx - 1, ry))
+                    let gy = 0.5 * (sample(rx, ry + 1) - sample(rx, ry - 1))
+                    let d = Double(cur.data[y * w + x]) - b
+                    sg.x += gx
+                    sg.y += gy
+                    sd += d
+                    sxx += gx * gx
+                    sxy += gx * gy
+                    syy += gy * gy
+                    sgxd += gx * d
+                    sgyd += gy * d
+                }
+            }
+            // Mean-corrected normal equations: M delta = -v.
+            let mxx = sxx - sg.x * sg.x / n, mxy = sxy - sg.x * sg.y / n, myy = syy - sg.y * sg.y / n
+            let vx = sgxd - sg.x * sd / n, vy = sgyd - sg.y * sd / n
+            let det = mxx * myy - mxy * mxy
+            guard det > 1e-9 else { break }
+            var dx = -(myy * vx - mxy * vy) / det
+            var dy = -(mxx * vy - mxy * vx) / det
+            dx = min(max(dx, -1), 1)
+            dy = min(max(dy, -1), 1)
+            s = Vec2(s.x + dx, s.y + dy)
+            if abs(dx) < 0.002 && abs(dy) < 0.002 { break }
+        }
+        return s
     }
 }
