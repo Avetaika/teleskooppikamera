@@ -5,5 +5,7 @@ iPhone-sovellus kaukoputken okulaarikameraksi (Sky-Watcher Heritage 150P + Virtu
 - Suunnitelma: [plan.md](plan.md)
 - Päätökset: [decisions.md](decisions.md)
 - Alkuperäinen toimeksianto: [docs/brief.md](docs/brief.md)
+- **Käyttäjän ohje (mitä teen seuraavaksi):** [docs/ohje.md](docs/ohje.md)
+- Asennus iPhoneen: [docs/install.md](docs/install.md)
 
 Rakenne: `Core/` on alustariippumaton Swift-paketti (testattavissa Windowsilla ja Linuxilla), `App/` on iOS-sovellus (käännetään GitHub Actionsissa).
