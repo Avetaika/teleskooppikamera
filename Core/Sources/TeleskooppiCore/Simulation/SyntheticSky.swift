@@ -134,33 +134,47 @@ public struct SyntheticSky: Sendable {
         return vig * edge
     }
 
-    /// Noise-free expected electrons per pixel. `imageOffset` shifts all stars (seeing jitter).
-    public func renderExpected(boresight: Vec2, imageOffset: Vec2 = .zero) -> GrayImageF {
+    /// Sky background (no stars) in electrons per pixel for the whole image. Independent of the
+    /// boresight, so callers rendering many frames can compute it once.
+    public func expectedBackground() -> GrayImageF {
         let w = optics.imageWidth, h = optics.imageHeight
-        let cfg = configuration
         var img = GrayImageF(width: w, height: h)
+        fillBackground(&img.pixels, rect: PixelRect(x: 0, y: 0, width: w, height: h), bufferWidth: w)
+        return img
+    }
+
+    /// Writes the background of `rect` into `buffer` (row-major, `bufferWidth` wide, origin at the rect corner).
+    private func fillBackground(_ buffer: inout [Float], rect: PixelRect, bufferWidth: Int) {
+        let cfg = configuration
         let c = optics.opticalCenter
-        for y in 0..<h {
-            for x in 0..<w {
+        for y in rect.y0..<rect.y1 {
+            for x in rect.x0..<rect.x1 {
                 let p = Vec2(Double(x), Double(y))
                 let ill = illumination(at: p)
                 let sky = max(0, cfg.background + cfg.backgroundGradient.dot(p - c))
                 let v = sky * ill + cfg.outsideFieldLevel * (1 - ill)
-                img.pixels[y * w + x] = Float(v)
+                buffer[(y - rect.y0) * bufferWidth + (x - rect.x0)] = Float(v)
             }
         }
+    }
+
+    /// Adds all stars that touch `rect` to `buffer` (same layout as `fillBackground`).
+    private func addStars(to buffer: inout [Float], rect: PixelRect, bufferWidth: Int, boresight: Vec2,
+                          imageOffset: Vec2) {
+        let cfg = configuration
         let radius = cfg.psf.renderRadius
         let r2max = radius * radius
         // 3x3 sub-pixel sampling of the PSF.
         let sub: [Double] = [-1.0 / 3, 0, 1.0 / 3]
         for star in field.stars {
             let p = optics.project(star: star.position, boresight: boresight) + imageOffset
-            guard p.x > -radius, p.y > -radius, p.x < Double(w) + radius, p.y < Double(h) + radius else { continue }
+            guard p.x > Double(rect.x0) - radius, p.y > Double(rect.y0) - radius,
+                  p.x < Double(rect.x1) + radius, p.y < Double(rect.y1) + radius else { continue }
             let ill = illumination(at: p)
             guard ill > 0 else { continue }
             let flux = cfg.flux(magnitude: star.magnitude) * ill
-            let x0 = max(0, Int((p.x - radius).rounded(.down))), x1 = min(w - 1, Int((p.x + radius).rounded(.up)))
-            let y0 = max(0, Int((p.y - radius).rounded(.down))), y1 = min(h - 1, Int((p.y + radius).rounded(.up)))
+            let x0 = max(rect.x0, Int((p.x - radius).rounded(.down))), x1 = min(rect.x1 - 1, Int((p.x + radius).rounded(.up)))
+            let y0 = max(rect.y0, Int((p.y - radius).rounded(.down))), y1 = min(rect.y1 - 1, Int((p.y + radius).rounded(.up)))
             guard x0 <= x1, y0 <= y1 else { continue }
             for y in y0...y1 {
                 for x in x0...x1 {
@@ -173,11 +187,52 @@ public struct SyntheticSky: Sendable {
                             s += cfg.psf.value(r2: ddx * ddx + ddy * ddy)
                         }
                     }
-                    img.pixels[y * w + x] += Float(flux * s / 9)
+                    buffer[(y - rect.y0) * bufferWidth + (x - rect.x0)] += Float(flux * s / 9)
                 }
             }
         }
+    }
+
+    /// Noise-free expected electrons per pixel. `imageOffset` shifts all stars (seeing jitter).
+    public func renderExpected(boresight: Vec2, imageOffset: Vec2 = .zero) -> GrayImageF {
+        let w = optics.imageWidth, h = optics.imageHeight
+        var img = expectedBackground()
+        addStars(to: &img.pixels, rect: PixelRect(x: 0, y: 0, width: w, height: h), bufferWidth: w,
+                 boresight: boresight, imageOffset: imageOffset)
         return img
+    }
+
+    /// Renders only `window` of a noisy 8-bit frame into `image` (which must have the optics' size);
+    /// pixels outside the window are left untouched. Cost is proportional to the window area, which
+    /// makes closed-loop tests with a tracking ROI cheap. Noise is Gaussian with variance
+    /// `signal + readNoise^2` (the Poisson noise is approximated), one deviate per pixel.
+    /// Pass a cached `background` (from `expectedBackground()`) to skip recomputing the sky.
+    public func render(into image: inout GrayImage8, window: PixelRect, boresight: Vec2,
+                       imageOffset: Vec2 = .zero, background: GrayImageF? = nil, rng: inout SplitMix64) {
+        let rect = window.clipped(width: image.width, height: image.height)
+        guard !rect.isEmpty else { return }
+        let w = rect.width, h = rect.height
+        let cfg = configuration
+        var buf = [Float](repeating: 0, count: w * h)
+        if let bg = background {
+            for y in 0..<h {
+                let src = (rect.y0 + y) * bg.stride + rect.x0
+                for x in 0..<w { buf[y * w + x] = bg.pixels[src + x] }
+            }
+        } else {
+            fillBackground(&buf, rect: rect, bufferWidth: w)
+        }
+        addStars(to: &buf, rect: rect, bufferWidth: w, boresight: boresight, imageOffset: imageOffset)
+        let read2 = cfg.readNoise * cfg.readNoise
+        for y in 0..<h {
+            let dst = (rect.y0 + y) * image.stride + rect.x0
+            for x in 0..<w {
+                let e = Double(buf[y * w + x])
+                let variance = read2 + (cfg.poissonNoise ? max(e, 0) : 0)
+                let electrons = e + variance.squareRoot() * rng.gaussian()
+                image.pixels[dst + x] = UInt8(clampingDouble: electrons / cfg.gain + cfg.bias)
+            }
+        }
     }
 
     /// Full frame with noise, 8-bit.
