@@ -94,6 +94,8 @@ public struct SimulationFrame: Sendable {
     public var sample: TrackSample?
     public var prompt: CalibrationPrompt
     public var stick: Vec2
+    /// Whether the ground-truth star is inside the field stop and image and not dropped out.
+    public var visible = true
 }
 
 public struct CalibrationRunOutcome: Sendable {
@@ -132,8 +134,12 @@ public struct CalibrationSimulation: Sendable {
     }
 
     /// Runs until the session finishes or `maxDuration` simulated seconds pass.
-    /// `onFrame` is called for every analysis frame.
-    public func run(maxDuration: Double = 180, onFrame: ((SimulationFrame) -> Void)? = nil) -> CalibrationRunOutcome {
+    /// `onFrame` is called for every analysis frame. With `observe`, the caller supplies the measurement
+    /// (e.g. by rendering a frame and running a detector) instead of the ground-truth position plus
+    /// jitter: it receives the frame (with `sample` = the ground-truth measurement, `prompt` = the
+    /// previous prompt) and returns the `TrackSample` to feed to the session, or nil for "not found".
+    public func run(maxDuration: Double = 180, onFrame: ((SimulationFrame) -> Void)? = nil,
+                    observe: ((SimulationFrame) -> TrackSample?)? = nil) -> CalibrationRunOutcome {
         var rng = SplitMix64(seed: scenario.seed)
         var mount = SimulatedMount(configuration: scenario.mount)
         var session = CalibrationSession(config: calibrationConfig, mode: mode)
@@ -160,10 +166,15 @@ public struct CalibrationSimulation: Sendable {
             let observed = truth + jitter
             let dropped = scenario.dropoutProbability > 0 && rng.bool(probability: scenario.dropoutProbability)
             let visible = optics.isInsideField(observed) && optics.isInsideImage(observed) && !dropped
-            let sample: TrackSample? = visible ? TrackSample(t: t, p: observed) : nil
+            var sample: TrackSample? = visible ? TrackSample(t: t, p: observed) : nil
+            if let observe {
+                sample = observe(SimulationFrame(time: t, boresight: mount.boresight, jitter: jitter,
+                                                 truePosition: truth, sample: sample, prompt: lastPrompt,
+                                                 stick: mount.stick, visible: visible))
+            }
             let prompt = session.feed(sample, at: t)
             onFrame?(SimulationFrame(time: t, boresight: mount.boresight, jitter: jitter, truePosition: truth,
-                                     sample: sample, prompt: prompt, stick: mount.stick))
+                                     sample: sample, prompt: prompt, stick: mount.stick, visible: visible))
 
             if prompt != lastPrompt {
                 log.append((t, prompt))
