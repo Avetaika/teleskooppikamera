@@ -31,6 +31,8 @@ struct DevMenuScreen: View {
                 if model.sourceKind == .synthetic {
                     syntheticSection
                 }
+                recordingSection
+                replaySection
                 performanceSection
                 toolsSection
             }
@@ -47,12 +49,78 @@ struct DevMenuScreen: View {
                 .font(.headline)
                 .foregroundStyle(NightTheme.red)
             HStack(spacing: 8) {
-                ForEach(FrameSourceKind.allCases) { kind in
+                ForEach([FrameSourceKind.camera, .synthetic]) { kind in
                     Button(kind.title) {
                         Task { await model.selectSource(kind) }
                     }
                     .buttonStyle(NightButtonStyle(isSelected: model.sourceKind == kind, font: .headline))
                 }
+            }
+        }
+    }
+
+    private var recordingSection: some View {
+        @Bindable var model = model
+        return VStack(alignment: .leading, spacing: 8) {
+            Text("Nauhoitus")
+                .font(.headline)
+                .foregroundStyle(NightTheme.red)
+            HStack(spacing: 6) {
+                ForEach(RecordingRate.allCases) { rate in
+                    Button(rate.title) { model.recordingRate = rate }
+                        .buttonStyle(NightButtonStyle(isSelected: model.recordingRate == rate, font: .subheadline.weight(.bold)))
+                        .disabled(model.recording.isRecording)
+                }
+            }
+            TextField("Muistiinpanot (esim. 25 mm, tatti ylös)", text: $model.recordingNotes)
+                .textFieldStyle(.roundedBorder)
+                .foregroundStyle(Color.black)
+            Button {
+                model.toggleRecording()
+            } label: {
+                Label(model.recording.isRecording ? "Lopeta nauhoitus" : "Aloita nauhoitus",
+                      systemImage: model.recording.isRecording ? "stop.circle.fill" : "record.circle")
+            }
+            .buttonStyle(NightButtonStyle(isSelected: model.recording.isRecording, font: .headline))
+            .disabled(model.sourceKind == .replay)
+            if model.recording.isRecording {
+                let rec = model.recording
+                Text(verbatim: "\(RecordingFormat.elapsed(rec.elapsed)) · \(RecordingFormat.size(rec.bytes)) · \(rec.frames) kehystä · pudotettu \(rec.dropped)")
+                    .nightMonospaced()
+                if let error = rec.error {
+                    Text(verbatim: "virhe: \(error)").nightMonospaced()
+                }
+            } else if let name = model.lastRecordingName {
+                Text(verbatim: "valmis: \(name) (Tiedostot-sovellus → Teleskooppi)").nightMonospaced()
+            }
+        }
+    }
+
+    private var replaySection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Toisto")
+                .font(.headline)
+                .foregroundStyle(NightTheme.red)
+            let sessions = AppFiles.sessions()
+            if sessions.isEmpty {
+                Text("Ei nauhoitteita. Nauhoita tai kopioi .tcs-kansio Tiedostot-sovelluksella.")
+                    .font(.footnote)
+                    .foregroundStyle(NightTheme.red)
+            }
+            ForEach(sessions, id: \.self) { url in
+                Button(url.deletingPathExtension().lastPathComponent) {
+                    Task { await model.startReplay(url: url) }
+                }
+                .buttonStyle(NightButtonStyle(
+                    isSelected: model.sourceKind == .replay && model.replayName == url.lastPathComponent,
+                    font: .subheadline
+                ))
+            }
+            if model.sourceKind == .replay {
+                Button("Takaisin kameraan") {
+                    Task { await model.selectSource(.camera) }
+                }
+                .buttonStyle(NightButtonStyle(font: .headline))
             }
         }
     }

@@ -18,11 +18,13 @@ struct Frame: @unchecked Sendable {
 enum FrameSourceKind: String, CaseIterable, Sendable, Identifiable {
     case camera
     case synthetic
+    case replay
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
+        case .replay: String(localized: "Toisto")
         case .camera: String(localized: "Kamera")
         case .synthetic: String(localized: "Synteettinen taivas")
         }

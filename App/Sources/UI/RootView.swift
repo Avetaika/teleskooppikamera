@@ -28,6 +28,16 @@ struct RootView: View {
                 HStack(alignment: .top, spacing: 8) {
                     StatusHUD(model: model)
                     Button {
+                        model.toggleRecording()
+                    } label: {
+                        Image(systemName: model.recording.isRecording ? "stop.circle.fill" : "record.circle")
+                            .font(.title2.weight(.bold))
+                    }
+                    .buttonStyle(NightButtonStyle(isSelected: model.recording.isRecording, font: .title2))
+                    .frame(width: NightTheme.buttonHeight)
+                    .disabled(model.sourceKind == .replay)
+                    .accessibilityLabel(Text("Nauhoitus"))
+                    Button {
                         showDevMenu = true
                     } label: {
                         Image(systemName: "ellipsis")
@@ -49,6 +59,9 @@ struct RootView: View {
             .padding(.bottom, 8)
         }
         .task { await model.startCurrentSource() }
+        .onChange(of: showPerformanceOverlay, initial: true) { _, enabled in
+            model.setDetectionEnabled(enabled)
+        }
         .onAppear { UIApplication.shared.isIdleTimerDisabled = true }
         .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
         .fullScreenCover(isPresented: $showDevMenu) {
@@ -75,9 +88,13 @@ struct RootView: View {
                     MetalView(renderer: model.renderer, params: model.renderParams(viewSize: size))
                 }
                 CrosshairOverlay(transform: model.transform(viewSize: size))
-                LongPressLocationView { point in
-                    model.setOpticalCenter(atScreen: point, viewSize: size)
+                if showPerformanceOverlay {
+                    StarOverlay(transform: model.transform(viewSize: size), analysis: model.analysis)
                 }
+                LongPressLocationView(
+                    onLongPress: { point in model.setOpticalCenter(atScreen: point, viewSize: size) },
+                    onTap: { point in model.selectStar(atScreen: point, viewSize: size) }
+                )
             }
             .frame(width: size.width, height: size.height)
         }
@@ -121,7 +138,7 @@ struct RootView: View {
     @ViewBuilder
     private var status: some View {
         switch model.sourceKind {
-        case .synthetic:
+        case .synthetic, .replay:
             EmptyView()
         case .camera:
             cameraStatus

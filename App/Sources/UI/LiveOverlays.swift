@@ -44,9 +44,10 @@ struct CrosshairOverlay: View {
 struct LongPressLocationView: UIViewRepresentable {
     var minimumDuration: TimeInterval = 0.8
     var onLongPress: (CGPoint) -> Void
+    var onTap: (CGPoint) -> Void = { _ in }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(onLongPress: onLongPress)
+        Coordinator(onLongPress: onLongPress, onTap: onTap)
     }
 
     func makeUIView(context: Context) -> UIView {
@@ -58,25 +59,39 @@ struct LongPressLocationView: UIViewRepresentable {
         recognizer.minimumPressDuration = minimumDuration
         recognizer.allowableMovement = 30
         view.addGestureRecognizer(recognizer)
+        let tap = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleTap(_:)))
+        view.addGestureRecognizer(tap)
         return view
     }
 
     func updateUIView(_ uiView: UIView, context: Context) {
         context.coordinator.onLongPress = onLongPress
+        context.coordinator.onTap = onTap
     }
 
     @MainActor
     final class Coordinator: NSObject {
         var onLongPress: (CGPoint) -> Void
+        var onTap: (CGPoint) -> Void
+        private var lastLongPress = Date.distantPast
 
-        init(onLongPress: @escaping (CGPoint) -> Void) {
+        init(onLongPress: @escaping (CGPoint) -> Void, onTap: @escaping (CGPoint) -> Void) {
             self.onLongPress = onLongPress
+            self.onTap = onTap
         }
 
         @objc func handle(_ recognizer: UILongPressGestureRecognizer) {
             guard recognizer.state == .began, let view = recognizer.view else { return }
+            lastLongPress = Date()
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             onLongPress(recognizer.location(in: view))
+        }
+
+        @objc func handleTap(_ recognizer: UITapGestureRecognizer) {
+            guard recognizer.state == .ended, let view = recognizer.view else { return }
+            // A finger lifted after a long press must not also count as a tap.
+            guard Date().timeIntervalSince(lastLongPress) > 1 else { return }
+            onTap(recognizer.location(in: view))
         }
     }
 }
@@ -110,6 +125,14 @@ struct StatusHUD: View {
             .foregroundStyle(NightTheme.red)
             .nightPlate()
 
+            if model.recording.isRecording {
+                let rec = model.recording
+                Text(verbatim: "● NAUHOITUS \(RecordingFormat.elapsed(rec.elapsed)) · \(RecordingFormat.size(rec.bytes)) · pudotettu \(rec.dropped)")
+                    .font(.system(.footnote, design: .monospaced).weight(.bold))
+                    .foregroundStyle(NightTheme.red)
+                    .nightPlate()
+            }
+
             if let readout = model.controls.readout, model.sourceKind == .camera {
                 Text("\(formatExposure(readout.exposureSeconds)) · ISO \(Int(readout.iso.rounded())) · linssi \(readout.lensPosition, specifier: "%.3f")")
                     .font(.system(.footnote, design: .monospaced))
@@ -134,6 +157,14 @@ struct PerformanceOverlay: View {
             Text("akku \(Int(status.batteryLevel * 100)) % \(status.batteryState)\(status.lowPowerMode ? " · virransäästö" : "")")
             if model.sourceKind == .synthetic {
                 Text("synteettinen kuva \(model.syntheticRenderMilliseconds, specifier: "%.0f") ms/kuva")
+            }
+            if model.isDetectionEnabled {
+                let timing = model.detectionTiming
+                Text(verbatim: model.analysis?.hudLine ?? "tunnistus käynnistyy…")
+                Text(verbatim: String(
+                    format: "tunnistus %.1f ms (keski %.1f, max %.1f) · binnaus %.1f ms",
+                    timing.last, timing.average, timing.maximum, model.analysis?.binMilliseconds ?? 0
+                ))
             }
         }
         .nightMonospaced()

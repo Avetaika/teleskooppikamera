@@ -10,19 +10,23 @@ import TeleskooppiCore
 final class FrameSink: @unchecked Sendable {
     private let renderer: FrameRenderer?
     private let monitor: PerformanceMonitor
+    private let pipeline: FramePipeline
     private let onSizeChange: @Sendable (CGSize) -> Void
     private let lock = NSLock()
     private var lastSize = CGSize.zero
 
-    init(renderer: FrameRenderer?, monitor: PerformanceMonitor, onSizeChange: @escaping @Sendable (CGSize) -> Void) {
+    init(renderer: FrameRenderer?, monitor: PerformanceMonitor, pipeline: FramePipeline,
+         onSizeChange: @escaping @Sendable (CGSize) -> Void) {
         self.renderer = renderer
         self.monitor = monitor
+        self.pipeline = pipeline
         self.onSizeChange = onSizeChange
     }
 
     func receive(_ frame: Frame) {
         monitor.frameArrived(at: CACurrentMediaTime())
         renderer?.submit(frame)
+        pipeline.submit(frame)
         let size = CGSize(width: frame.width, height: frame.height)
         let changed = lock.withLock { () -> Bool in
             guard size != lastSize else { return false }
@@ -80,6 +84,16 @@ final class AppModel {
     private(set) var syntheticRenderMilliseconds = 0.0
     private(set) var captureEventCount = 0
 
+    // Recording, detection and replay (phases 3 and 4)
+    private(set) var recording = RecordingStatus()
+    var recordingNotes = ""
+    var recordingRate: RecordingRate = .fps10
+    private(set) var lastRecordingName: String?
+    private(set) var analysis: StarAnalysisResult?
+    private(set) var detectionTiming = LatencyTracker()
+    private(set) var isDetectionEnabled = false
+    private(set) var replayName: String?
+
     // Capability report (phase 0)
     private(set) var isGeneratingReport = false
     private(set) var lastReport: SavedReport?
@@ -93,6 +107,8 @@ final class AppModel {
     private let cameraSource: CameraFrameSource
     private let monitor: PerformanceMonitor
     private let sink: FrameSink
+    private let pipeline: FramePipeline
+    private var replaySource: ReplayFrameSource?
     private let brightness = BrightnessController()
     private var ticker: Task<Void, Never>?
     private var isStartingSource = false
@@ -104,6 +120,8 @@ final class AppModel {
         let renderer = AppInfo.isRunningTests ? nil : FrameRenderer(performance: monitor)
         let camera = CameraService()
         let box = SizeCallbackBox()
+        let pipeline = FramePipeline()
+        self.pipeline = pipeline
 
         self.camera = camera
         self.cameraSource = CameraFrameSource(service: camera)
@@ -111,10 +129,13 @@ final class AppModel {
         self.renderer = renderer
         self.controls = CameraControlModel(camera: camera)
         self.display = DisplaySettings.load()
-        self.sink = FrameSink(renderer: renderer, monitor: monitor) { size in box.call(size) }
+        self.sink = FrameSink(renderer: renderer, monitor: monitor, pipeline: pipeline) { size in box.call(size) }
 
         box.set { [weak self] size in
             Task { @MainActor in self?.frameSizeChanged(size) }
+        }
+        pipeline.setResultHandler { [weak self] result in
+            Task { @MainActor in self?.receiveAnalysis(result) }
         }
         let sink = self.sink
         cameraSource.setFrameHandler { sink.receive($0) }
@@ -145,11 +166,20 @@ final class AppModel {
             } catch {
                 log.error("Synthetic source failed: \(error.localizedDescription)")
             }
+        case .replay:
+            do {
+                try await replaySource?.start()
+                isSourceRunning = replaySource != nil
+            } catch {
+                log.error("Replay failed: \(error.localizedDescription)")
+            }
         }
     }
 
     func stopCurrentSource() async {
         switch sourceKind {
+        case .replay:
+            await replaySource?.stop()
         case .camera:
             guard cameraState == .running else { return }
             await cameraSource.stop()
@@ -167,6 +197,81 @@ final class AppModel {
         sourceKind = kind
         log.notice("Frame source: \(kind.rawValue)")
         await startCurrentSource()
+    }
+
+    /// Plays a recorded session as the live source (dev menu). Stops any current recording.
+    func startReplay(url: URL) async {
+        stopRecording()
+        await stopCurrentSource()
+        sink.resetSize()
+        pipeline.selectStar(near: nil)
+        let source = ReplayFrameSource(url: url)
+        source.setFrameHandler { [sink] in sink.receive($0) }
+        do {
+            try await source.start()
+            replaySource = source
+            replayName = url.lastPathComponent
+            sourceKind = .replay
+            isSourceRunning = true
+            log.notice("Replay started: \(url.lastPathComponent)")
+        } catch {
+            log.error("Replay failed: \(error.localizedDescription)")
+            await startCurrentSource()
+        }
+    }
+
+    // MARK: - Recording and detection
+
+    func toggleRecording() {
+        if recording.isRecording { stopRecording() } else { startRecording() }
+    }
+
+    func startRecording() {
+        guard !recording.isRecording, sourceKind != .replay else { return }
+        let info = DeviceInfo(
+            model: AppInfo.hardwareModel, systemVersion: UIDevice.current.systemVersion,
+            appVersion: AppInfo.marketingVersion
+        )
+        pipeline.startRecording(
+            parent: AppFiles.documents, rate: recordingRate.rawValue, notes: recordingNotes, device: info
+        )
+        recording = pipeline.recorder.status(now: CACurrentMediaTime())
+        log.notice("Recording started at \(recordingRate.title)")
+    }
+
+    func stopRecording() {
+        guard recording.isRecording else { return }
+        let url = pipeline.stopRecording(notes: recordingNotes)
+        lastRecordingName = url?.lastPathComponent
+        recording = RecordingStatus()
+        log.notice("Recording stopped: \(url?.lastPathComponent ?? "no frames")")
+    }
+
+    func setDetectionEnabled(_ enabled: Bool) {
+        guard enabled != isDetectionEnabled else { return }
+        isDetectionEnabled = enabled
+        pipeline.setDetectionEnabled(enabled)
+        if !enabled { analysis = nil }
+    }
+
+    /// Tap: the star nearest to the touched point becomes the tracked star.
+    func selectStar(atScreen point: CGPoint, viewSize: CGSize) {
+        guard isDetectionEnabled else { return }
+        let factor = analysis?.geometry.factor ?? LumaBinning.factor(forWidth: Int(imageSize.width))
+        let binned = StarSelection.binnedPoint(
+            fromScreen: point, transform: transform(viewSize: viewSize), factor: factor
+        )
+        pipeline.selectStar(near: binned)
+    }
+
+    func clearStarSelection() {
+        pipeline.selectStar(near: nil)
+    }
+
+    private func receiveAnalysis(_ result: StarAnalysisResult) {
+        guard isDetectionEnabled else { return }
+        analysis = result
+        detectionTiming.record(result.detectMilliseconds)
     }
 
     private func startCamera() async {
@@ -211,6 +316,7 @@ final class AppModel {
             UIApplication.shared.isIdleTimerDisabled = false
             brightness.restore()
             stopTicker()
+            stopRecording()
             Task { await stopCurrentSource() }
         default:
             break
@@ -302,6 +408,8 @@ final class AppModel {
         if iteration % 60 == 0 { sun = SunReminder() }
         performance = monitor.snapshot(now: CACurrentMediaTime())
         syntheticRenderMilliseconds = syntheticSource.renderMilliseconds
+        recording = pipeline.recorder.status(now: CACurrentMediaTime())
+        if let readout = controls.readout { pipeline.setLensPosition(Float(readout.lensPosition)) }
         deviceStatus = Self.readDeviceStatus()
         if sourceKind == .camera, cameraState == .running {
             await controls.refresh()
