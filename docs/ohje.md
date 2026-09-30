@@ -70,7 +70,7 @@ Kunkin vaiheen tarkka testi ja hyväksymiskriteeri löytyvät [plan.md](../plan.
 | 0 Työkaluketju + kamerasovellus | ✅ pilvessä · ⏳ **odottaa asennustasi puhelimeen** |
 | 1 Kalibroinnin matematiikka + simulaatio | ✅ valmis (59 testiä) |
 | 2 Metal-livekuva, yötila, kamerasäädöt | ✅ pilvessä (CI vihreä) · ⏳ **odottaa puhelintestiäsi** (lista alla) |
-| 3–4 Nauhoitus, tähden tunnistus (ydin) | 🔨 työn alla |
+| 3–4 Nauhoitus, tähden tunnistus | ✅ ydin ja sovellusintegraatio pilvessä (CI vihreä) · ⏳ **odottaa puhelintestiäsi** (kohta 9) |
 | 5 Kalibrointi ja liikeohje sovelluksessa | seuraavaksi |
 | 6 Profiilit, viimeistely → MVP | sen jälkeen |
 
@@ -94,3 +94,11 @@ Asenna uusin build (kohta 2). Puhelin voi ilmoittaa iOS 27.0, vaikka sovelluksen
 - [ ] **Napit:** onnistuuko niiden painaminen hanskat kädessä (napit ovat vähintään 64 pt)?
 
 Mitatut arvot kirjataan tiedostoon `docs/device-iphone17.md`.
+
+## 9. Vaihe 3–4 -testi puhelimella
+
+- [ ] **Nauhoitus:** ⏺-nappi ylhäällä (tai Kehitysvalikko → Nauhoitus, valitse 10 fps, kirjoita muistiinpano) → 5 min nauhoitus. Ruudulla näkyy aika ja koko; ”pudotettu” pysyy 0:ssa ja lämpötila ”nominal”/”fair”. Kopioi `session-….tcs` Tiedostot-sovelluksesta Windowsille (`teleskooppi-cli info/replay`).
+- [ ] **Tunnistus:** Kehitysvalikko → Näytä pääruudulla. Tähdet saavat renkaan; HUD:ssa ”tunnistus x ms” (tavoite alle 15 ms; kirjaa keski/max täyskuvalla ja lukittuna).
+- [ ] **Lukitus:** napauta tähteä: paksu rengas seuraa sitä, HUD näyttää SNR ja HFR. Aja tähti kentän reunalta toiselle: lukitus ei hyppää toiseen tähteen.
+- [ ] **Toisto:** Kehitysvalikko → Toisto → valitse nauhoite: se toistuu livekuvana ja tunnistus toimii siitä. ”Takaisin kameraan” palauttaa.
+- [ ] **Päivätesti:** 60 s nauhoite mastosta tattia ylös, alas, vasemmalle ja oikealle (ensimmäinen oikea kalibrointidata); yöllä 2 × 60 s kirkkaasta tähdestä 25 mm ja 10 mm, nopeustaso muistiinpanoon.
