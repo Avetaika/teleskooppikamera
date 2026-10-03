@@ -4,7 +4,7 @@ import TeleskooppiCore
 /// `CalibrationPersisting` backed by the active setup profile: one calibration per profile, so an
 /// eyepiece switch loads that eyepiece's calibration (phase 6, replaces the single UserDefaults slot).
 @MainActor
-final class ActiveProfileCalibrationStore: CalibrationPersisting {
+final class ActiveProfileCalibrationStore: @preconcurrency CalibrationPersisting {
     private let manager: ProfileManager
 
     init(manager: ProfileManager) {
