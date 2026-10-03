@@ -19,13 +19,20 @@ struct DisplaySettings: Codable, Equatable, Sendable {
     var redMode = true
     /// In-app screen brightness (0...1); `nil` = leave the system brightness alone.
     var brightness: Double?
+    /// Rotation and mirroring last applied from a calibration (phase 5). While the current
+    /// values equal these the view is calibrated, not "KÄSI" (manual).
+    var appliedCalibration: AppliedCalibration?
 
     static let rotationRange: ClosedRange<Double> = -180...180
     static let zoomRange: ClosedRange<Double> = 0.5...4
 
     /// The rotation slider shows "KÄSI" when anything deviates from the identity view.
     var isManual: Bool {
-        rotationDegrees != 0 || flipHorizontal || flipVertical
+        if let applied = appliedCalibration {
+            return !applied.matches(rotationDegrees: rotationDegrees, flipHorizontal: flipHorizontal,
+                                    flipVertical: flipVertical)
+        }
+        return rotationDegrees != 0 || flipHorizontal || flipVertical
     }
 
     /// Image-space center of the image in pixel-index coordinates (pixel i has its center at i).

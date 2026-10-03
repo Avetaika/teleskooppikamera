@@ -103,7 +103,11 @@ final class AppModel {
     let syntheticSource: SyntheticFrameSource
     let renderer: FrameRenderer?
     let controls: CameraControlModel
+    /// Calibration flow and guidance (phase 5).
+    let calibration: CalibrationController
 
+    private var performanceDetection = false
+    private var rotationAnimation: Task<Void, Never>?
     private let cameraSource: CameraFrameSource
     private let monitor: PerformanceMonitor
     private let sink: FrameSink
@@ -129,6 +133,11 @@ final class AppModel {
         self.renderer = renderer
         self.controls = CameraControlModel(camera: camera)
         self.display = DisplaySettings.load()
+        let calibration = AppInfo.isRunningTests
+            ? CalibrationController(store: UserDefaultsCalibrationStore(defaults: .standard, key: "calibration.tests"),
+                                    feedback: SilentCalibrationFeedback())
+            : CalibrationController()
+        self.calibration = calibration
         self.sink = FrameSink(renderer: renderer, monitor: monitor, pipeline: pipeline) { size in box.call(size) }
 
         box.set { [weak self] size in
@@ -142,6 +151,20 @@ final class AppModel {
         syntheticSource.setFrameHandler { sink.receive($0) }
         camera.setDropHandler { monitor.frameDropped() }
         UIDevice.current.isBatteryMonitoringEnabled = true
+
+        calibration.contextProvider = { [weak self] in
+            guard let self else {
+                return CalibrationContext(imageSize: CGSize(width: 1920, height: 1440), opticalCenter: Vec2(959.5, 719.5))
+            }
+            return CalibrationContext(
+                imageSize: self.imageSize,
+                opticalCenter: self.display.resolvedOpticalCenter(imageSize: self.imageSize),
+                isSynthetic: self.sourceKind == .synthetic
+            )
+        }
+        calibration.selectStar = { [weak self] point in self?.pipeline.selectStar(near: point) }
+        calibration.detectionNeedChanged = { [weak self] in self?.refreshDetection() }
+        calibration.applyToDisplay = { [weak self] result in self?.applyCalibrationToDisplay(result) }
     }
 
     // MARK: - Sources
@@ -247,6 +270,17 @@ final class AppModel {
         log.notice("Recording stopped: \(url?.lastPathComponent ?? "no frames")")
     }
 
+    /// The performance overlay toggle also wants detection (it shows the detection HUD).
+    func setPerformanceOverlay(_ enabled: Bool) {
+        performanceDetection = enabled
+        refreshDetection()
+    }
+
+    /// Detection runs for the performance overlay, a running calibration and active guidance.
+    func refreshDetection() {
+        setDetectionEnabled(performanceDetection || calibration.needsDetection)
+    }
+
     func setDetectionEnabled(_ enabled: Bool) {
         guard enabled != isDetectionEnabled else { return }
         isDetectionEnabled = enabled
@@ -272,6 +306,7 @@ final class AppModel {
         guard isDetectionEnabled else { return }
         analysis = result
         detectionTiming.record(result.detectMilliseconds)
+        calibration.receive(result)
     }
 
     private func startCamera() async {
@@ -377,11 +412,51 @@ final class AppModel {
 
     // MARK: - Hardware buttons
 
-    /// Placeholder for the volume / Camera Control / AirPods click events (D-18). Calibration
-    /// will use this later as "calibrate / next / acknowledge STOP".
+    /// Volume / Camera Control / AirPods click events (D-18): "calibrate / next / acknowledge
+    /// STOP" (see `CalibrationTriggerAction`). Acts on the end of the press.
     func handleCaptureEvent(phaseRawValue: Int, isEnd: Bool) {
         captureEventCount += 1
-        log.notice("Capture event: phase=\(phaseRawValue) end=\(isEnd) total=\(captureEventCount) (placeholder, D-18)")
+        log.notice("Capture event: phase=\(phaseRawValue) end=\(isEnd) total=\(captureEventCount)")
+        if isEnd { calibration.hardwareTrigger() }
+    }
+
+    // MARK: - Calibration (phase 5)
+
+    /// Rotates the view to the calibrated orientation (stick up = screen up) over about 0.7 s.
+    /// The mirror flag switches at once; the rotation takes the shortest way round.
+    func applyCalibrationToDisplay(_ result: CalibrationResult) {
+        rotationAnimation?.cancel()
+        let from = display.rotationDegrees
+        let target = result.displayRotationDegrees
+        var wrapped = (target - from).truncatingRemainder(dividingBy: 360)
+        if wrapped > 180 { wrapped -= 360 }
+        if wrapped < -180 { wrapped += 360 }
+        let delta = wrapped
+        let applied = AppliedCalibration(rotationDegrees: target, mirrored: result.mirrored)
+        updateDisplay {
+            $0.flipHorizontal = result.mirrored
+            $0.flipVertical = false
+            $0.appliedCalibration = applied
+        }
+        let steps = 28
+        rotationAnimation = Task { [weak self] in
+            for i in 1...steps {
+                try? await Task.sleep(for: .milliseconds(25))
+                guard !Task.isCancelled, let self else { return }
+                let x = Double(i) / Double(steps)
+                let eased = x * x * (3 - 2 * x)
+                let degrees = i == steps ? target : from + delta * eased
+                self.updateDisplay { $0.setRotation(degrees: degrees) }
+            }
+        }
+    }
+
+    /// Dev menu: synthetic sky with the virtual stick, then straight into the calibration flow.
+    func startSimulatedCalibrationRun() async {
+        if sourceKind != .synthetic { await selectSource(.synthetic) }
+        // The ground-truth rotation is not yet known to the app: start from an unrotated view.
+        updateDisplay { $0.appliedCalibration = nil }
+        calibration.start()
     }
 
     // MARK: - Periodic refresh

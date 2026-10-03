@@ -31,6 +31,7 @@ struct DevMenuScreen: View {
                 if model.sourceKind == .synthetic {
                     syntheticSection
                 }
+                calibrationSection
                 recordingSection
                 replaySection
                 performanceSection
@@ -121,6 +122,37 @@ struct DevMenuScreen: View {
                     Task { await model.selectSource(.camera) }
                 }
                 .buttonStyle(NightButtonStyle(font: .headline))
+            }
+        }
+    }
+
+    private var calibrationSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Kalibrointi ja ohjaus")
+                .font(.headline)
+                .foregroundStyle(NightTheme.red)
+            Text(verbatim: model.calibration.calibration.map {
+                String(format: "Kalibroitu: kierto %.1f°, peilaus %@, kohtisuoruus %.1f°",
+                       $0.displayRotationDegrees, $0.mirrored ? "kyllä" : "ei",
+                       AngleMath.degrees($0.orthogonalityError))
+            } ?? "Ei kalibrointia.")
+                .nightMonospaced()
+            Toggle(isOn: Binding(
+                get: { model.calibration.invertedConvention },
+                set: { model.calibration.setInverted($0) }
+            )) {
+                Text("Käänteinen ohjauskonventio (D-09): nuoli osoittaa, minne tähden pitää mennä")
+                    .foregroundStyle(NightTheme.red)
+            }
+            .tint(NightTheme.red)
+            Button("Simuloitu ajo: synteettinen taivas + virtuaalitatti") {
+                dismiss()
+                Task { await model.startSimulatedCalibrationRun() }
+            }
+            .buttonStyle(NightButtonStyle(font: .headline))
+            if model.calibration.calibration != nil {
+                Button("Unohda kalibrointi") { model.calibration.forgetCalibration() }
+                    .buttonStyle(NightButtonStyle(font: .headline))
             }
         }
     }

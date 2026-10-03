@@ -117,6 +117,10 @@ struct StatusHUD: View {
                     Text("KÄSI \(model.display.rotationDegrees, specifier: "%.1f")°")
                         .fontWeight(.bold)
                 }
+                if model.calibration.calibration != nil, !model.display.isManual {
+                    Text(model.calibration.invertedConvention ? "KALIBROITU ↔" : "KALIBROITU")
+                        .fontWeight(.bold)
+                }
                 if model.sourceKind == .synthetic {
                     Text("SYNTEETTINEN").fontWeight(.bold)
                 }

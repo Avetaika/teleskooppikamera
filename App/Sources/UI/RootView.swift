@@ -51,16 +51,29 @@ struct RootView: View {
                     PerformanceOverlay(model: model)
                 }
                 Spacer(minLength: 0)
+                if model.sourceKind == .synthetic, model.calibration.calibration != nil {
+                    VirtualStickView { model.setStick($0) }
+                }
                 status
                 panelView
+                calibrationRow
                 bottomBar
             }
             .padding(.horizontal, 12)
             .padding(.bottom, 8)
+            .opacity(model.calibration.panelVisible ? 0 : 1)
+            .allowsHitTesting(!model.calibration.panelVisible)
+
+            if model.calibration.panelVisible {
+                CalibrationOverlay(
+                    controller: model.calibration,
+                    onVirtualStick: model.sourceKind == .synthetic ? { model.setStick($0) } : nil
+                )
+            }
         }
         .task { await model.startCurrentSource() }
         .onChange(of: showPerformanceOverlay, initial: true) { _, enabled in
-            model.setDetectionEnabled(enabled)
+            model.setPerformanceOverlay(enabled)
         }
         .onAppear { UIApplication.shared.isIdleTimerDisabled = true }
         .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
@@ -88,8 +101,11 @@ struct RootView: View {
                     MetalView(renderer: model.renderer, params: model.renderParams(viewSize: size))
                 }
                 CrosshairOverlay(transform: model.transform(viewSize: size))
-                if showPerformanceOverlay {
+                if showPerformanceOverlay || model.calibration.needsDetection {
                     StarOverlay(transform: model.transform(viewSize: size), analysis: model.analysis)
+                }
+                if model.calibration.calibration != nil, !model.calibration.panelVisible {
+                    GuidanceOverlay(controller: model.calibration, transform: model.transform(viewSize: size))
                 }
                 LongPressLocationView(
                     onLongPress: { point in model.setOpticalCenter(atScreen: point, viewSize: size) },
@@ -114,6 +130,20 @@ struct RootView: View {
                 .buttonStyle(NightButtonStyle(isSelected: panel == .display, font: .subheadline.weight(.bold)))
             Button("Kamera") { toggle(.camera) }
                 .buttonStyle(NightButtonStyle(isSelected: panel == .camera, font: .subheadline.weight(.bold)))
+        }
+    }
+
+    /// "Kalibroi" and, after a manual change, the way back to the calibrated view.
+    private var calibrationRow: some View {
+        HStack(spacing: 6) {
+            Button("Kalibroi") { model.calibration.showPanel() }
+                .buttonStyle(NightButtonStyle(
+                    isSelected: model.calibration.calibration == nil, font: .headline.weight(.heavy)
+                ))
+            if let calibrated = model.calibration.calibration, model.display.isManual {
+                Button("Käytä kalibrointia") { model.applyCalibrationToDisplay(calibrated) }
+                    .buttonStyle(NightButtonStyle(font: .subheadline.weight(.bold)))
+            }
         }
     }
 
