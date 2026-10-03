@@ -2,7 +2,8 @@ import Foundation
 import TeleskooppiCore
 
 /// Where the active calibration is kept between launches. The default is `UserDefaults`; the
-/// setup profile store (phase 6) can replace it by conforming to this protocol.
+/// setup profile store (phase 6) replaces it: see `ActiveProfileCalibrationStore`.
+@MainActor
 protocol CalibrationPersisting {
     func load() -> CalibrationResult?
     /// `nil` clears the stored calibration.

@@ -105,6 +105,8 @@ final class AppModel {
     let controls: CameraControlModel
     /// Calibration flow and guidance (phase 5).
     let calibration: CalibrationController
+    /// Setup profiles (phase 6); calibration is stored in the active one.
+    let profiles: ProfileManager
 
     private var performanceDetection = false
     private var rotationAnimation: Task<Void, Never>?
@@ -133,10 +135,16 @@ final class AppModel {
         self.renderer = renderer
         self.controls = CameraControlModel(camera: camera)
         self.display = DisplaySettings.load()
-        let calibration = AppInfo.isRunningTests
-            ? CalibrationController(store: UserDefaultsCalibrationStore(defaults: .standard, key: "calibration.tests"),
-                                    feedback: SilentCalibrationFeedback())
-            : CalibrationController()
+        let profiles = AppInfo.isRunningTests ? ProfileManager(store: InMemoryProfileStore()) : ProfileManager()
+        let calibrationStore = ActiveProfileCalibrationStore(manager: profiles)
+        let calibration: CalibrationController
+        if AppInfo.isRunningTests {
+            calibration = CalibrationController(store: calibrationStore, feedback: SilentCalibrationFeedback())
+        } else {
+            calibrationStore.migrateLegacy(from: UserDefaultsCalibrationStore())
+            calibration = CalibrationController(store: calibrationStore)
+        }
+        self.profiles = profiles
         self.calibration = calibration
         self.sink = FrameSink(renderer: renderer, monitor: monitor, pipeline: pipeline) { size in box.call(size) }
 
@@ -165,6 +173,10 @@ final class AppModel {
         calibration.selectStar = { [weak self] point in self?.pipeline.selectStar(near: point) }
         calibration.detectionNeedChanged = { [weak self] in self?.refreshDetection() }
         calibration.applyToDisplay = { [weak self] result in self?.applyCalibrationToDisplay(result) }
+        calibration.profileNameProvider = { [weak self] in self?.profiles.active?.name }
+        profiles.onActivate = { [weak self] profile in self?.applyProfile(profile) }
+        profiles.onRecalibrate = { [weak self] in self?.calibration.start() }
+        profiles.onQuickCalibrate = { [weak self] in self?.calibration.startQuick() }
     }
 
     // MARK: - Sources

@@ -4,7 +4,7 @@ import TeleskooppiCore
 /// The single entry point in `RootView`: a button that opens the profile sheet.
 struct ProfileEntryButton: View {
     let model: AppModel
-    @State private var manager = ProfileManager()
+    private var manager: ProfileManager { model.profiles }
     @State private var showSheet = false
 
     var body: some View {
@@ -22,9 +22,6 @@ struct ProfileEntryButton: View {
         .buttonStyle(NightButtonStyle(font: .title2))
         .frame(width: NightTheme.buttonHeight)
         .accessibilityLabel(Text("Okulaariprofiilit"))
-        .onAppear {
-            manager.onActivate = { [weak model] profile in model?.applyProfile(profile) }
-        }
         .fullScreenCover(isPresented: $showSheet) {
             ProfileSheet(manager: manager, model: model, isPresented: $showSheet)
         }

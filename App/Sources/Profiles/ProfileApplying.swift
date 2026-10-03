@@ -39,6 +39,13 @@ extension AppModel {
         let center = profile.opticalCenter ?? profile.calibration?.opticalCenter
         updateDisplay { $0.opticalCenter = center }
         if let camera = profile.camera { controls.apply(camera) }
+        // Each profile has its own calibration: load it and turn the view to it.
+        calibration.reloadFromStore()
+        if let stored = calibration.calibration {
+            applyCalibrationToDisplay(stored)
+        } else {
+            updateDisplay { $0.appliedCalibration = nil }
+        }
     }
 
     /// Current camera + centre, for saving back into the active profile.

@@ -72,7 +72,7 @@ Kunkin vaiheen tarkka testi ja hyväksymiskriteeri löytyvät [plan.md](../plan.
 | 2 Metal-livekuva, yötila, kamerasäädöt | ✅ pilvessä (CI vihreä) · ⏳ **odottaa puhelintestiäsi** (lista alla) |
 | 3–4 Nauhoitus, tähden tunnistus | ✅ ydin ja sovellusintegraatio pilvessä (CI vihreä) · ⏳ **odottaa puhelintestiäsi** (kohta 9) |
 | 5 Kalibrointi ja liikeohje sovelluksessa | ✅ pilvessä (CI vihreä, testit) · ⏳ **odottaa puhelin- ja kenttätestiäsi** (kohta 10) |
-| 6 Profiilit, viimeistely → MVP | sen jälkeen |
+| 6 Profiilit, viimeistely → MVP | ✅ profiilit, pikakalibrointi ja kalibrointi profiilikohtaisena pilvessä (CI) · ⏳ vikaviestien hionta, docs/kaytto.md ja kenttätesti kesken |
 
 ## 8. Vaihe 2 -testi puhelimella
 

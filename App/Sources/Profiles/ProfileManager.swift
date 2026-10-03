@@ -21,6 +21,14 @@ enum StartChoice: Sendable, CaseIterable {
     case quickCalibrate
 }
 
+/// What to suggest after the eyepiece changed.
+enum CalibrationSuggestion: Sendable, Equatable {
+    /// The new profile already has a calibration: only the phone angle may have changed.
+    case quick
+    /// The new profile has no calibration yet.
+    case full
+}
+
 /// Owns the setup profiles: persistence, active profile and the start-screen decisions.
 /// Applying a profile to camera/display is delegated to `onActivate`; starting calibration flows to
 /// `onRecalibrate` / `onQuickCalibrate` (wired by the calibration UI).
@@ -30,6 +38,8 @@ final class ProfileManager: ProfileCalibrationPersisting {
     private(set) var profiles: [SetupProfile] = []
     private(set) var activeID: UUID?
     private(set) var lastError: String?
+    /// Set after an eyepiece change until a calibration is started or saved.
+    private(set) var suggestion: CalibrationSuggestion?
 
     @ObservationIgnored var onActivate: ((SetupProfile) -> Void)?
     @ObservationIgnored var onRecalibrate: (() -> Void)?
@@ -100,12 +110,14 @@ final class ProfileManager: ProfileCalibrationPersisting {
         case .quickCalibrate:
             if canQuickCalibrate, let id = activeID {
                 activate(id: id)
+                suggestion = nil
                 onQuickCalibrate?()
                 return .quickCalibrate
             }
             return start(.recalibrate)
         case .recalibrate:
             if let id = activeID { activate(id: id) }
+            suggestion = nil
             onRecalibrate?()
             return .recalibrate
         }
@@ -118,6 +130,9 @@ final class ProfileManager: ProfileCalibrationPersisting {
         guard var profile = profile(id: id) else { return }
         profile.lastUsedAt = now()
         persist(profile)
+        if let old = activeID, old != id {
+            suggestion = profile.calibration != nil ? .quick : .full
+        }
         activeID = id
         do { try store.setLastUsedID(id) } catch { lastError = "\(error)" }
         onActivate?(profile)
@@ -139,6 +154,21 @@ final class ProfileManager: ProfileCalibrationPersisting {
         persist(profile)
         activate(id: profile.id)
         return profile
+    }
+
+    /// Makes the first profile active without applying it (first launch, nothing chosen yet), so a
+    /// finished calibration has somewhere to be stored.
+    func adoptDefaultActive() {
+        guard activeID == nil, let first = profiles.first else { return }
+        activeID = first.id
+        do { try store.setLastUsedID(first.id) } catch { lastError = "\(error)" }
+    }
+
+    func clearCalibration(profileID: UUID) {
+        guard var profile = profile(id: profileID) else { return }
+        profile.calibration = nil
+        profile.updatedAt = now()
+        persist(profile)
     }
 
     func delete(id: UUID) {
@@ -175,6 +205,7 @@ final class ProfileManager: ProfileCalibrationPersisting {
     func save(_ result: CalibrationResult, profileID: UUID) {
         guard var profile = profile(id: profileID) else { return }
         profile.calibration = result
+        suggestion = nil
         profile.opticalCenter = result.opticalCenter
         if let radius = result.fieldRadius { profile.fieldRadius = radius }
         profile.updatedAt = now()

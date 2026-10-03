@@ -1,6 +1,1436 @@
 {
-  "sourceLanguage" : "fi",
-  "strings" : {
+  "sourceLanguage": "fi",
+  "strings": {
+    "%lld · ISO %lld · linssi %.3f": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld · ISO %lld · linssi %.3f"
+          }
+        }
+      }
+    },
+    "+1°": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+1°"
+          }
+        }
+      }
+    },
+    "+90°": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+90°"
+          }
+        }
+      }
+    },
+    "0°": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0°"
+          }
+        }
+      }
+    },
+    "ALAS": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ALAS"
+          }
+        }
+      }
+    },
+    "Adapterin asento": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adapterin asento"
+          }
+        }
+      }
+    },
+    "Aseta optinen keskipiste painamalla kuvaa sormella noin sekunnin. Ristikko siirtyy näytön keskelle.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aseta optinen keskipiste painamalla kuvaa sormella noin sekunnin. Ristikko siirtyy näytön keskelle."
+          }
+        }
+      }
+    },
+    "Avaa Asetukset": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avaa Asetukset"
+          }
+        }
+      }
+    },
+    "Barlow %.0f×": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Barlow %.0f×"
+          }
+        }
+      }
+    },
+    "Ei nauhoitteita. Nauhoita tai kopioi .tcs-kansio Tiedostot-sovelluksella.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ei nauhoitteita. Nauhoita tai kopioi .tcs-kansio Tiedostot-sovelluksella."
+          }
+        }
+      }
+    },
+    "Gamma %.2f": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gamma %.2f"
+          }
+        }
+      }
+    },
+    "HUOMIO": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HUOMIO"
+          }
+        }
+      }
+    },
+    "HUONO": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HUONO"
+          }
+        }
+      }
+    },
+    "HYVÄ": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HYVÄ"
+          }
+        }
+      }
+    },
+    "ISO %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ISO %lld"
+          }
+        }
+      }
+    },
+    "Jaa": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jaa"
+          }
+        }
+      }
+    },
+    "Kalibroi": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kalibroi"
+          }
+        }
+      }
+    },
+    "Kalibroi uudelleen": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kalibroi uudelleen"
+          }
+        }
+      }
+    },
+    "Kalibrointi": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kalibrointi"
+          }
+        }
+      }
+    },
+    "Kalibrointi %lld/%lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kalibrointi %lld/%lld"
+          }
+        }
+      }
+    },
+    "Kalibrointi epäonnistui": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kalibrointi epäonnistui"
+          }
+        }
+      }
+    },
+    "Kalibrointi ja ohjaus": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kalibrointi ja ohjaus"
+          }
+        }
+      }
+    },
+    "Kalibrointi valmis": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kalibrointi valmis"
+          }
+        }
+      }
+    },
+    "Kalibrointi: osoita kaukaiseen kohteeseen tai tähteen okulaarin läpi. Automaattitarkennus ajetaan kerran ja arvo lukitaan.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kalibrointi: osoita kaukaiseen kohteeseen tai tähteen okulaarin läpi. Automaattitarkennus ajetaan kerran ja arvo lukitaan."
+          }
+        }
+      }
+    },
+    "Kamera": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kamera"
+          }
+        }
+      }
+    },
+    "Kamera ei ole käytettävissä: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kamera ei ole käytettävissä: %@"
+          }
+        }
+      }
+    },
+    "Kameran käyttö on estetty. Salli se Asetuksissa (Teleskooppi → Kamera).": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kameran käyttö on estetty. Salli se Asetuksissa (Teleskooppi → Kamera)."
+          }
+        }
+      }
+    },
+    "Kehitysvalikko": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kehitysvalikko"
+          }
+        }
+      }
+    },
+    "Keskitä kuva": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keskitä kuva"
+          }
+        }
+      }
+    },
+    "Kierto %.1f°": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kierto %.1f°"
+          }
+        }
+      }
+    },
+    "Kuva": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kuva"
+          }
+        }
+      }
+    },
+    "Kuva ei rauhoittunut. Älä koske putkeen tai jalustaan, odota hetki ja yritä uudelleen.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kuva ei rauhoittunut. Älä koske putkeen tai jalustaan, odota hetki ja yritä uudelleen."
+          }
+        }
+      }
+    },
+    "Kuva on peilattu. Tarkista SynScanin suuntien kääntöasetukset. Tatti ja ruutu täsmäävät, mutta kuva ei vastaa taivasta paljain silmin.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kuva on peilattu. Tarkista SynScanin suuntien kääntöasetukset. Tatti ja ruutu täsmäävät, mutta kuva ei vastaa taivasta paljain silmin."
+          }
+        }
+      }
+    },
+    "Kuvalähde": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kuvalähde"
+          }
+        }
+      }
+    },
+    "Kuvan kierto %.1f°": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kuvan kierto %.1f°"
+          }
+        }
+      }
+    },
+    "Kyvykkyysraportti": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kyvykkyysraportti"
+          }
+        }
+      }
+    },
+    "KÄSI %.1f°": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "KÄSI %.1f°"
+          }
+        }
+      }
+    },
+    "Käynnistetään kameraa…": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Käynnistetään kameraa…"
+          }
+        }
+      }
+    },
+    "Käytä edellistä": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Käytä edellistä"
+          }
+        }
+      }
+    },
+    "Käytä järjestelmän kirkkautta": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Käytä järjestelmän kirkkautta"
+          }
+        }
+      }
+    },
+    "Käytä kalibrointia": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Käytä kalibrointia"
+          }
+        }
+      }
+    },
+    "Käänteinen ohjauskonventio (D-09): nuoli osoittaa, minne tähden pitää mennä": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Käänteinen ohjauskonventio (D-09): nuoli osoittaa, minne tähden pitää mennä"
+          }
+        }
+      }
+    },
+    "Liike jäi liian lyhyeksi (%.0f / %.0f px). Pidä tattia pohjassa, kunnes ruutu sanoo STOP.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Liike jäi liian lyhyeksi (%.0f / %.0f px). Pidä tattia pohjassa, kunnes ruutu sanoo STOP."
+          }
+        }
+      }
+    },
+    "Liike kesti liian kauan. Pienennä nopeustasoa tai pidä tattia pohjassa pidempään.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Liike kesti liian kauan. Pienennä nopeustasoa tai pidä tattia pohjassa pidempään."
+          }
+        }
+      }
+    },
+    "Liikkeet eivät olleet kohtisuorassa (poikkeama %.0f°). Paina tatti suoraan ylös ja sitten suoraan oikealle.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Liikkeet eivät olleet kohtisuorassa (poikkeama %.0f°). Paina tatti suoraan ylös ja sitten suoraan oikealle."
+          }
+        }
+      }
+    },
+    "Liikkeitä ei voitu erottaa toisistaan. Paina ensin suoraan ylös, sitten suoraan oikealle.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Liikkeitä ei voitu erottaa toisistaan. Paina ensin suoraan ylös, sitten suoraan oikealle."
+          }
+        }
+      }
+    },
+    "Linssin paikka %.3f": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Linssin paikka %.3f"
+          }
+        }
+      }
+    },
+    "Loki": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loki"
+          }
+        }
+      }
+    },
+    "Loki on tyhjä.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loki on tyhjä."
+          }
+        }
+      }
+    },
+    "Luo": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Luo"
+          }
+        }
+      }
+    },
+    "Luo raportti": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Luo raportti"
+          }
+        }
+      }
+    },
+    "Mitataan paikallaanoloa ja ajelehtimista.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mitataan paikallaanoloa ja ajelehtimista."
+          }
+        }
+      }
+    },
+    "Mitataan… (noin 10 s)": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mitataan… (noin 10 s)"
+          }
+        }
+      }
+    },
+    "Muistiinpanot (esim. 25 mm, tatti ylös)": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muistiinpanot (esim. 25 mm, tatti ylös)"
+          }
+        }
+      }
+    },
+    "Mustapiste %.2f": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mustapiste %.2f"
+          }
+        }
+      }
+    },
+    "Napauta kirkasta tähteä lähellä ristikkoa.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Napauta kirkasta tähteä lähellä ristikkoa."
+          }
+        }
+      }
+    },
+    "Napauta tähteä": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Napauta tähteä"
+          }
+        }
+      }
+    },
+    "Nauhoitus": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nauhoitus"
+          }
+        }
+      }
+    },
+    "Nollaa max-viive": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nollaa max-viive"
+          }
+        }
+      }
+    },
+    "Nollaa venytys": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nollaa venytys"
+          }
+        }
+      }
+    },
+    "Nyt: %lld, ISO %lld. Rajat %lld–%lld, ISO %lld–%lld.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nyt: %lld, ISO %lld. Rajat %lld–%lld, ISO %lld–%lld."
+          }
+        }
+      }
+    },
+    "Näennäinen kenttä %.0f°": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Näennäinen kenttä %.0f°"
+          }
+        }
+      }
+    },
+    "Näytön kirkkaus %lld %": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Näytön kirkkaus %lld %"
+          }
+        }
+      }
+    },
+    "OIK": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OIK"
+          }
+        }
+      }
+    },
+    "OK": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "Odotetaan, että kuva pysähtyy.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odotetaan, että kuva pysähtyy."
+          }
+        }
+      }
+    },
+    "Okulaari %.0f mm": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Okulaari %.0f mm"
+          }
+        }
+      }
+    },
+    "Okulaari ja kalibrointi": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Okulaari ja kalibrointi"
+          }
+        }
+      }
+    },
+    "Okulaari vaihtui: Kalibroi": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Okulaari vaihtui: Kalibroi"
+          }
+        }
+      }
+    },
+    "Okulaari vaihtui: Pikakalibrointi": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Okulaari vaihtui: Pikakalibrointi"
+          }
+        }
+      }
+    },
+    "Okulaariprofiilit": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Okulaariprofiilit"
+          }
+        }
+      }
+    },
+    "Peilaa pysty": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peilaa pysty"
+          }
+        }
+      }
+    },
+    "Peilaa vaaka": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peilaa vaaka"
+          }
+        }
+      }
+    },
+    "Peruuta": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peruuta"
+          }
+        }
+      }
+    },
+    "Pidä pohjassa, kunnes ruutu sanoo STOP.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pidä pohjassa, kunnes ruutu sanoo STOP."
+          }
+        }
+      }
+    },
+    "Pidä tattia ALAS": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pidä tattia ALAS"
+          }
+        }
+      }
+    },
+    "Pidä tattia OIKEALLE": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pidä tattia OIKEALLE"
+          }
+        }
+      }
+    },
+    "Pidä tattia VASEMMALLE": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pidä tattia VASEMMALLE"
+          }
+        }
+      }
+    },
+    "Pidä tattia YLÖS": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pidä tattia YLÖS"
+          }
+        }
+      }
+    },
+    "Pikakalibrointi": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pikakalibrointi"
+          }
+        }
+      }
+    },
+    "Pikakalibrointi (1 liike)": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pikakalibrointi (1 liike)"
+          }
+        }
+      }
+    },
+    "Pikakalibrointi valmis": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pikakalibrointi valmis"
+          }
+        }
+      }
+    },
+    "Profiili: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profiili: %@"
+          }
+        }
+      }
+    },
+    "Päivitä": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Päivitä"
+          }
+        }
+      }
+    },
+    "Päästä irti": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Päästä irti"
+          }
+        }
+      }
+    },
+    "Päästä tatti irti": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Päästä tatti irti"
+          }
+        }
+      }
+    },
+    "Raportti": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Raportti"
+          }
+        }
+      }
+    },
+    "Raportti mittaa kameran formaatit, valotusrajat, ISO:n, RAW-tuen ym. ja kokeilee 1 s:n valotusta. Tulos tallentuu Tiedostot-sovellukseen (Teleskooppi-kansio).": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Raportti mittaa kameran formaatit, valotusrajat, ISO:n, RAW-tuen ym. ja kokeilee 1 s:n valotusta. Tulos tallentuu Tiedostot-sovellukseen (Teleskooppi-kansio)."
+          }
+        }
+      }
+    },
+    "STOP": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "STOP"
+          }
+        }
+      }
+    },
+    "STOP, päästä tatti irti": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "STOP, päästä tatti irti"
+          }
+        }
+      }
+    },
+    "SYNTEETTINEN": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SYNTEETTINEN"
+          }
+        }
+      }
+    },
+    "Seuranta päälle ja hidas nopeustaso (3–4). Napauta kirkasta tähteä ristikon lähellä ja paina Kalibroi. Tee sitten kuten ruutu käskee: tatti ylös, STOP, tatti oikealle, STOP.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seuranta päälle ja hidas nopeustaso (3–4). Napauta kirkasta tähteä ristikon lähellä ja paina Kalibroi. Tee sitten kuten ruutu käskee: tatti ylös, STOP, tatti oikealle, STOP."
+          }
+        }
+      }
+    },
+    "Siirrä kirkas tähti ristikon lähelle (alle 40 % säteestä).": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siirrä kirkas tähti ristikon lähelle (alle 40 % säteestä)."
+          }
+        }
+      }
+    },
+    "Siirtää simuloitua jalustaa. Simuloidun optiikan oikea kierto on %.0f°: kun kuvan kierto on se, tatti ylös liikuttaa tähtiä ruudulla alas.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siirtää simuloitua jalustaa. Simuloidun optiikan oikea kierto on %.0f°: kun kuvan kierto on se, tatti ylös liikuttaa tähtiä ruudulla alas."
+          }
+        }
+      }
+    },
+    "Simuloitu ajo: synteettinen taivas + virtuaalitatti": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Simuloitu ajo: synteettinen taivas + virtuaalitatti"
+          }
+        }
+      }
+    },
+    "Sovelluksen loki": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sovelluksen loki"
+          }
+        }
+      }
+    },
+    "Sulje": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sulje"
+          }
+        }
+      }
+    },
+    "Suorituskyky": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suorituskyky"
+          }
+        }
+      }
+    },
+    "Takaisin kameraan": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Takaisin kameraan"
+          }
+        }
+      }
+    },
+    "Tallennettu ääretön: %.3f": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tallennettu ääretön: %.3f"
+          }
+        }
+      }
+    },
+    "Tallennus epäonnistui: %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tallennus epäonnistui: %lld"
+          }
+        }
+      }
+    },
+    "Tarkennus": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tarkennus"
+          }
+        }
+      }
+    },
+    "Tatti ylös = ruutu ylös.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tatti ylös = ruutu ylös."
+          }
+        }
+      }
+    },
+    "Toisto": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toisto"
+          }
+        }
+      }
+    },
+    "Työkalut": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Työkalut"
+          }
+        }
+      }
+    },
+    "Tähti ei liikkunut. Paina tattia ja pidä se pohjassa. Tarkista, että jalusta on päällä ja nopeustaso ei ole 1.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tähti ei liikkunut. Paina tattia ja pidä se pohjassa. Tarkista, että jalusta on päällä ja nopeustaso ei ole 1."
+          }
+        }
+      }
+    },
+    "Tähti katosi. Valitse kirkkaampi tähti, tai tarkenna kuva, ja yritä uudelleen.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tähti katosi. Valitse kirkkaampi tähti, tai tarkenna kuva, ja yritä uudelleen."
+          }
+        }
+      }
+    },
+    "Tähti lähemmäs ristikkoa": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tähti lähemmäs ristikkoa"
+          }
+        }
+      }
+    },
+    "Tähti meni liian lähelle kentän reunaa. Aloita tähdestä, joka on lähempänä ristikkoa.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tähti meni liian lähelle kentän reunaa. Aloita tähdestä, joka on lähempänä ristikkoa."
+          }
+        }
+      }
+    },
+    "Täysi kalibrointi": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Täysi kalibrointi"
+          }
+        }
+      }
+    },
+    "Unohda kalibrointi": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unohda kalibrointi"
+          }
+        }
+      }
+    },
+    "Uusi profiili": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uusi profiili"
+          }
+        }
+      }
+    },
+    "VAS": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VAS"
+          }
+        }
+      }
+    },
+    "Valkopiste %.2f": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valkopiste %.2f"
+          }
+        }
+      }
+    },
+    "Valmis": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valmis"
+          }
+        }
+      }
+    },
+    "Valotus": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valotus"
+          }
+        }
+      }
+    },
+    "Valotusaika %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valotusaika %lld"
+          }
+        }
+      }
+    },
+    "Virtuaalitatti": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Virtuaalitatti"
+          }
+        }
+      }
+    },
+    "YLÖS": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "YLÖS"
+          }
+        }
+      }
+    },
+    "Yritä uudelleen": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yritä uudelleen"
+          }
+        }
+      }
+    },
+    "Zoom %.2f×": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoom %.2f×"
+          }
+        }
+      }
+    },
+    "akku %lld % %lld%lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "akku %lld % %lld%lld"
+          }
+        }
+      }
+    },
+    "kamera %.1f fps · piirto %.1f fps": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "kamera %.1f fps · piirto %.1f fps"
+          }
+        }
+      }
+    },
+    "kohtisuoruus %.1f°": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "kohtisuoruus %.1f°"
+          }
+        }
+      }
+    },
+    "lämpö %lld · paine %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "lämpö %lld · paine %lld"
+          }
+        }
+      }
+    },
+    "synteettinen kuva %.0f ms/kuva": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "synteettinen kuva %.0f ms/kuva"
+          }
+        }
+      }
+    },
+    "viive %.0f ms (max %.0f) · pudotettu %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "viive %.0f ms (max %.0f) · pudotettu %lld"
+          }
+        }
+      }
+    },
+    "Älä koske tattiin": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Älä koske tattiin"
+          }
+        }
+      }
+    },
+    "Ääretön": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ääretön"
+          }
+        }
+      }
+    },
+    "−1°": {
+      "extractionState": "manual",
+      "localizations": {
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "−1°"
+          }
+        }
+      }
+    }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }

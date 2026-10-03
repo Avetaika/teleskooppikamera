@@ -141,6 +141,16 @@ struct RootView: View {
                 .buttonStyle(NightButtonStyle(
                     isSelected: model.calibration.calibration == nil, font: .headline.weight(.heavy)
                 ))
+            if let suggestion = model.profiles.suggestion {
+                switch suggestion {
+                case .quick:
+                    Button("Okulaari vaihtui: Pikakalibrointi") { model.profiles.start(.quickCalibrate) }
+                        .buttonStyle(NightButtonStyle(isSelected: true, font: .subheadline.weight(.bold)))
+                case .full:
+                    Button("Okulaari vaihtui: Kalibroi") { model.profiles.start(.recalibrate) }
+                        .buttonStyle(NightButtonStyle(isSelected: true, font: .subheadline.weight(.bold)))
+                }
+            }
             if let calibrated = model.calibration.calibration, model.display.isManual {
                 Button("Käytä kalibrointia") { model.applyCalibrationToDisplay(calibrated) }
                     .buttonStyle(NightButtonStyle(font: .subheadline.weight(.bold)))

@@ -30,6 +30,8 @@ final class CalibrationController {
     private(set) var starSelected = false
     private(set) var panelVisible = false
     private(set) var calibration: CalibrationResult?
+    /// True while a one-move quick calibration (D-06) is running or was the last one started.
+    private(set) var isQuick = false
     private(set) var guidanceState = GuidanceDisplayState()
     private(set) var lastGuidance: GuidanceOutput?
     /// Convention setting (D-09): arrow flipped when true.
@@ -53,6 +55,8 @@ final class CalibrationController {
     /// Called when the need for star detection may have changed.
     @ObservationIgnored var detectionNeedChanged: @MainActor () -> Void = {}
     /// Called with a new calibration so the display can rotate to it (animated).
+    /// Name of the profile being calibrated, shown in the result and failure cards.
+    @ObservationIgnored var profileNameProvider: @MainActor () -> String? = { nil }
     @ObservationIgnored var applyToDisplay: @MainActor (CalibrationResult) -> Void = { _ in }
 
     @ObservationIgnored private var session: CalibrationSession?
@@ -98,10 +102,37 @@ final class CalibrationController {
         detectionNeedChanged()
     }
 
+    var profileName: String? { profileNameProvider() }
+
+    /// Full two-move calibration (UP, RIGHT).
     func start() {
+        begin(quick: false)
+    }
+
+    /// One-move calibration (UP only) against the stored calibration (D-06). Falls back to the full
+    /// calibration when there is nothing to build on.
+    func startQuick() {
+        begin(quick: calibration != nil)
+    }
+
+    /// Reloads the active profile's calibration (after a profile switch). Aborts a running session.
+    func reloadFromStore() {
+        if session != nil || panelVisible { cancel() }
+        calibration = store.load()
+        resetGuidance()
+        detectionNeedChanged()
+    }
+
+    private func begin(quick: Bool) {
         let context = contextProvider()
         let config = CalibrationConfig(opticalCenter: context.opticalCenter, fieldRadius: context.fieldRadius)
-        session = CalibrationSession(config: config)
+        if quick, let previous = calibration {
+            session = CalibrationSession(config: config, mode: .quick(previous: previous))
+            isQuick = true
+        } else {
+            session = CalibrationSession(config: config)
+            isQuick = false
+        }
         prompt = .centerStar
         progress = 0
         moveIndex = 0
@@ -131,7 +162,7 @@ final class CalibrationController {
     }
 
     func retry() {
-        start()
+        begin(quick: isQuick)
     }
 
     func acknowledgeStop() {

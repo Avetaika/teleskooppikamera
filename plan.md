@@ -530,7 +530,7 @@ flowchart LR
 **Tila 2026-10-03 (sovellus valmis, CI vihreä; laite- ja kenttätestit kesken):** ✅ `CalibrationController` (Core-tilakone, STOP-välähdys + piippaus + haptiikka, tulos/virhenäkymät, animoitu kierto, tallennus `CalibrationPersisting`), `GuidanceOverlay` (8-suuntainen nuoli, OK-hystereesi, akselimerkit, käänteinen konventio), napit D-18, kehitysvalikon simuloitu ajo. ⏳ D-09/D-24, tatin tyyppi ja hyväksyntä (5/5 keskitystä) vahvistetaan laitteella (ohje.md kohta 10).
 
 ### Vaihe 6: Profiilit, palaute ja viimeistely → **MVP valmis**
-**Tila:** profiilit (ydin `Core/.../Profiles/`, sovellus `App/Sources/Profiles/`, testit) tehty; loput (vikaviestit, käyttöliittymän hionta, `docs/kaytto.md`) kesken.
+**Tila:** profiilit (ydin `Core/.../Profiles/`, sovellus `App/Sources/Profiles/`), kalibroinnin tallennus profiilikohtaisesti, pikakalibrointi (1 liike, aloitusruudun valinnat johdotettu), profiilin nimi tulos- ja vikanäkymissä, okulaarin vaihdon ehdotus ja String Catalog tehty; loput (vikaviestien hionta, `docs/kaytto.md`, kenttätesti) kesken.
 **Rakennetaan:** `SetupProfileStore` (okulaari + adapterin asento + kalibrointi + kamera-asetukset + ääretön-linssiasento), aloitusruutu ”Käytä edellistä / Kalibroi uudelleen / Pikakalibrointi”. Okulaariprofiilit valmiiksi (25/10/9/6 + Barlow, TFOV-arvio). Vikatilojen viestit (tähti hävisi, pilvi, liian lyhyt liike, vino painallus). Käyttöliittymän hionta kenttätestien perusteella. Ohje `docs/kaytto.md`.
 **Ilman kaukoputkea:** profiilien tallennus, lataus ja siirto versioiden välillä (testit). Käytettävyystesti hanskoilla sisällä synteettisellä lähteellä.
 **Päivätesti:** okulaarin vaihto 25 → 10 mm → pikakalibrointi ≤ 30 s.

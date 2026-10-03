@@ -100,8 +100,15 @@ struct CalibrationOverlay: View {
                 Text("Seuranta päälle ja hidas nopeustaso (3–4). Napauta kirkasta tähteä ristikon lähellä ja paina Kalibroi. Tee sitten kuten ruutu käskee: tatti ylös, STOP, tatti oikealle, STOP.")
                     .font(.title3)
                     .multilineTextAlignment(.center)
-                Button("Kalibroi") { controller.start() }
-                    .buttonStyle(NightButtonStyle(font: .title.weight(.heavy)))
+                if controller.calibration != nil {
+                    Button("Pikakalibrointi (1 liike)") { controller.startQuick() }
+                        .buttonStyle(NightButtonStyle(font: .title.weight(.heavy)))
+                    Button("Täysi kalibrointi") { controller.start() }
+                        .buttonStyle(NightButtonStyle())
+                } else {
+                    Button("Kalibroi") { controller.start() }
+                        .buttonStyle(NightButtonStyle(font: .title.weight(.heavy)))
+                }
                 Button("Peruuta") { controller.cancel() }
                     .buttonStyle(NightButtonStyle())
             }
@@ -160,8 +167,16 @@ private struct ResultCard: View {
     var body: some View {
         let level = CalibrationScreenMapper.qualityLevel(for: result)
         VStack(spacing: 8) {
-            Text("Kalibrointi valmis")
-                .font(.system(size: 30, weight: .heavy, design: .rounded))
+            if result.isQuick {
+                Text("Pikakalibrointi valmis")
+                    .font(.system(size: 30, weight: .heavy, design: .rounded))
+            } else {
+                Text("Kalibrointi valmis")
+                    .font(.system(size: 30, weight: .heavy, design: .rounded))
+            }
+            if let name = controller.profileName {
+                Text("Profiili: \(name)").font(.headline)
+            }
             Text("Kuvan kierto \(result.displayRotationDegrees, specifier: "%.1f")°")
                 .font(.title2.weight(.semibold))
             Text("Tatti ylös = ruutu ylös.")
@@ -215,6 +230,9 @@ private struct FailureCard: View {
         VStack(spacing: 10) {
             Text("Kalibrointi epäonnistui")
                 .font(.system(size: 30, weight: .heavy, design: .rounded))
+            if let name = controller.profileName {
+                Text("Profiili: \(name)").font(.headline)
+            }
             message
                 .font(.title3)
                 .multilineTextAlignment(.center)
