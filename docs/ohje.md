@@ -71,7 +71,7 @@ Kunkin vaiheen tarkka testi ja hyväksymiskriteeri löytyvät [plan.md](../plan.
 | 1 Kalibroinnin matematiikka + simulaatio | ✅ valmis (59 testiä) |
 | 2 Metal-livekuva, yötila, kamerasäädöt | ✅ pilvessä (CI vihreä) · ⏳ **odottaa puhelintestiäsi** (lista alla) |
 | 3–4 Nauhoitus, tähden tunnistus | ✅ ydin ja sovellusintegraatio pilvessä (CI vihreä) · ⏳ **odottaa puhelintestiäsi** (kohta 9) |
-| 5 Kalibrointi ja liikeohje sovelluksessa | seuraavaksi |
+| 5 Kalibrointi ja liikeohje sovelluksessa | ✅ pilvessä (CI vihreä, testit) · ⏳ **odottaa puhelin- ja kenttätestiäsi** (kohta 10) |
 | 6 Profiilit, viimeistely → MVP | sen jälkeen |
 
 ## 8. Vaihe 2 -testi puhelimella
@@ -102,3 +102,14 @@ Mitatut arvot kirjataan tiedostoon `docs/device-iphone17.md`.
 - [ ] **Lukitus:** napauta tähteä: paksu rengas seuraa sitä, HUD näyttää SNR ja HFR. Aja tähti kentän reunalta toiselle: lukitus ei hyppää toiseen tähteen.
 - [ ] **Toisto:** Kehitysvalikko → Toisto → valitse nauhoite: se toistuu livekuvana ja tunnistus toimii siitä. ”Takaisin kameraan” palauttaa.
 - [ ] **Päivätesti:** 60 s nauhoite mastosta tattia ylös, alas, vasemmalle ja oikealle (ensimmäinen oikea kalibrointidata); yöllä 2 × 60 s kirkkaasta tähdestä 25 mm ja 10 mm, nopeustaso muistiinpanoon.
+
+## 10. Vaihe 5 -testi: kalibrointi ja liikeohje
+
+Ensin ilman kaukoputkea, sitten kentällä.
+
+- [ ] **1. Simulaatio (ei kaukoputkea):** Kehitysvalikko → Kalibrointi ja ohjaus → ”Simuloitu ajo”. Vedä virtuaalitattia kuten ruutu käskee (YLÖS, STOP, OIKEALLE, STOP). Tuloksen kierron pitäisi olla noin 35° ja peilauksen ”ei”. Paina Valmis: tila-rivillä lukee KALIBROITU ja nuoli ohjaa tähden ristikkoon (napauta tähteä, aja virtuaalitatilla). Toista 10 kertaa; kirjaa, kuinka monta kertaa kalibrointi epäonnistui.
+- [ ] **2. STOP:** koko ruudun punamusta vilkku, piippaus ja värinä tulevat yhtä aikaa? Kuuluuko piippaus hiljaisella tilalla ja kuulokkeista?
+- [ ] **3. Napit:** äänenvoimakkuusnappi (ja Camera Control / Bluetooth-laukaisin) aloittaa kalibroinnin, kuittaa STOPin ja hyväksyy tuloksen. Toimiiko hanskat kädessä?
+- [ ] **4. Päivä kaukoputkella:** SynScanissa seuranta päälle, nopeustaso 3–4. Napauta mastonhuippua (tai lentoestevaloa) ristikon lähellä, paina Kalibroi. Kirjaa kierto 3 kertaa (hajonta alle ±3°), peilaus (odotus: ei) ja vilkkuuko STOP oikeaan aikaan. Kuvan pitäisi kääntyä niin, että katot ovat ylhäällä.
+- [ ] **5. Ohje:** aja tähti reunalle ja seuraa pelkkää nuolta. Osoittaako `TATTI ←` oikeaan suuntaan? Jos tuntuu väärältä, käännä Kehitysvalikko → ”Käänteinen ohjauskonventio” ja kirjaa, kumpi on luonnollinen (D-09). Reunalla nuoli voi poiketa ruudun suunnasta (|m_R| ≠ |m_U|, D-24): kirjaa, häiritseekö.
+- [ ] **6. Yö:** kirkas tähti, 5 keskitystä kentän reunalta pelkkiä ohjeita seuraten (tavoite ≤ 20 s). Vastaako tatti analoginen vai on/off? Kirjaa myös, jos kalibrointi epäonnistuu ja mikä viesti tuli.
