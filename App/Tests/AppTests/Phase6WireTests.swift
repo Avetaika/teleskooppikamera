@@ -10,7 +10,7 @@ struct Phase6WireTests {
     private func calibration(rotation: Double = 0.5, center: Vec2 = Vec2(900, 700)) -> CalibrationResult {
         CalibrationResult(stickToImage: Mat2(columns: Vec2(-1, 0), Vec2(0, 1)), displayRotation: rotation,
                           mirrored: false, orthogonalityError: 0, lineResidual: 0.3, opticalCenter: center,
-                          fieldRadius: 500)
+                          fieldRadius: 500, createdAt: Date(timeIntervalSinceReferenceDate: 800_000_000))
     }
 
     private func makeController(_ manager: ProfileManager) -> (CalibrationController, ActiveProfileCalibrationStore) {
