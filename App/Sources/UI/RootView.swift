@@ -46,6 +46,7 @@ struct RootView: View {
                     .buttonStyle(NightButtonStyle(font: .title2))
                     .frame(width: NightTheme.buttonHeight)
                     .accessibilityLabel(Text("Kehitysvalikko"))
+                    ProfileEntryButton(model: model)
                 }
                 if showPerformanceOverlay {
                     PerformanceOverlay(model: model)
